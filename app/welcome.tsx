@@ -37,8 +37,8 @@ const SunnyAnimated = () => {
     // Gentle rotation animation
     rotation.value = withRepeat(
       withSequence(
-        withTiming(-0.05, { duration: 2000, easing: Easing.inOut(Easing.sine) }),
-        withTiming(0.05, { duration: 2000, easing: Easing.inOut(Easing.sine) })
+        withTiming(-0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) })
       ),
       -1, // Infinite repeat
       true // Reverse
@@ -47,8 +47,8 @@ const SunnyAnimated = () => {
     // Gentle pulsing animation
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.sine) }),
-        withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.sine) })
+        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.sin) })
       ),
       -1, // Infinite repeat
       true // Reverse
