@@ -19,6 +19,7 @@ import Animated, {
   withTiming, 
   withSequence,
   withDelay,
+  withRepeat,
   Easing
 } from 'react-native-reanimated';
 
@@ -239,7 +240,7 @@ export default function SignupScreen() {
   
   // Handle navigation to login
   const handleGoToLogin = () => {
-    router.push('/auth/login');
+    router.push('login');
   };
   
   return (

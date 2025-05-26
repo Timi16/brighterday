@@ -19,6 +19,7 @@ import Animated, {
   withTiming, 
   withSequence,
   withDelay,
+  withRepeat,
   Easing
 } from 'react-native-reanimated';
 
@@ -373,7 +374,7 @@ export default function ForgotPasswordScreen() {
   
   // Handle back to login
   const handleBackToLogin = () => {
-    router.push('/auth/login');
+    router.push('login');
   };
   
   return (
