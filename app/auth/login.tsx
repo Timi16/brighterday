@@ -19,6 +19,7 @@ import Animated, {
   withTiming, 
   withSequence,
   withDelay,
+  withRepeat,
   Easing
 } from 'react-native-reanimated';
 
@@ -361,12 +362,12 @@ export default function LoginScreen() {
   
   // Handle navigation to signup
   const handleGoToSignup = () => {
-    router.push('/auth/signup');
+    router.push('signup');
   };
   
   // Handle navigation to forgot password
   const handleGoToForgotPassword = () => {
-    router.push('/auth/forgot-password');
+    router.push('forgot-password');
   };
   
   return (

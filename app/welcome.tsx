@@ -344,7 +344,7 @@ const PlayfulBackground = () => {
             key={shape.id} 
             style={[shapeStyle, { zIndex: -1 }]}
           >
-            <View style={{ color: shape.color }}>
+            <View style={{}}>
               {shape.type === 'circle' && (
                 <View 
                   style={{
@@ -435,7 +435,7 @@ export default function WelcomeScreen() {
   
   // Handle get started press
   const handleGetStarted = () => {
-    router.push('/auth/signup');
+    router.push('/(auth)/signup');
   };
   
   // Handle learn more press
