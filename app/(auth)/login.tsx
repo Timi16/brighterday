@@ -37,7 +37,7 @@ const PlayfulShape = ({
   color, 
   style 
 }: { 
-  type: 'circle' | 'star' | 'triangle', 
+  type: 'circle' | 'star' | 'triangle' | 'cloud', 
   size: number, 
   color: string, 
   style?: any 
@@ -69,6 +69,50 @@ const PlayfulShape = ({
     };
   });
   
+  // Render a cloud shape
+  const renderCloud = () => (
+    <View style={{
+      width: size * 1.8,
+      height: size,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <View style={{
+        width: size * 0.6,
+        height: size * 0.6,
+        borderRadius: size,
+        backgroundColor: color,
+        position: 'absolute',
+        left: size * 0.2,
+      }} />
+      <View style={{
+        width: size * 0.8,
+        height: size * 0.8,
+        borderRadius: size,
+        backgroundColor: color,
+        position: 'absolute',
+        left: size * 0.6,
+      }} />
+      <View style={{
+        width: size * 0.7,
+        height: size * 0.7,
+        borderRadius: size,
+        backgroundColor: color,
+        position: 'absolute',
+        left: size * 1,
+      }} />
+      <View style={{
+        width: size * 1.6,
+        height: size * 0.5,
+        borderRadius: size,
+        backgroundColor: color,
+        position: 'absolute',
+        bottom: size * 0.15,
+      }} />
+    </View>
+  );
+  
   return (
     <Animated.View style={[styles.shapeContainer, animatedStyle, style]}>
       {type === 'circle' && (
@@ -89,6 +133,7 @@ const PlayfulShape = ({
           { borderBottomWidth: size, borderLeftWidth: size / 2, borderRightWidth: size / 2, borderBottomColor: color }
         ]} />
       )}
+      {type === 'cloud' && renderCloud()}
     </Animated.View>
   );
 };
@@ -206,12 +251,89 @@ const AnimatedButton = ({
   );
 };
 
-export default function SignupScreen() {
+// Sunny icon component
+const SunnyIcon = ({ size = 60 }: { size?: number }) => {
+  const scale = useSharedValue(0.8);
+  const rotation = useSharedValue(0);
+  
+  useEffect(() => {
+    // Gentle pulsing animation
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.sin) })
+      ),
+      -1, // Infinite repeat
+      true // Reverse
+    );
+    
+    // Gentle rotation animation
+    rotation.value = withRepeat(
+      withSequence(
+        withTiming(-0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) })
+      ),
+      -1, // Infinite repeat
+      true // Reverse
+    );
+  }, []);
+  
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: scale.value },
+        { rotate: `${rotation.value * Math.PI}rad` }
+      ],
+    };
+  });
+  
+  return (
+    <Animated.View style={[styles.sunnyContainer, animatedStyle]}>
+      <View style={[styles.sunCircle, { 
+        width: size, 
+        height: size, 
+        borderRadius: size / 2, 
+        backgroundColor: Colors.common.accent 
+      }]}>
+        {/* Sun rays */}
+        {Array(8).fill(0).map((_, i) => (
+          <View 
+            key={`ray-${i}`} 
+            style={[
+              styles.sunRay, 
+              { 
+                backgroundColor: Colors.common.accent,
+                transform: [{ rotate: `${i * 45}deg` }],
+                width: size * 0.1,
+                height: size * 0.3,
+                top: -size * 0.15,
+                left: size * 0.45,
+              }
+            ]} 
+          />
+        ))}
+        
+        {/* Sun face */}
+        <View style={styles.sunFace}>
+          {/* Eyes */}
+          <View style={styles.eyesContainer}>
+            <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
+            <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
+          </View>
+          
+          {/* Smile */}
+          <View style={[styles.smile, { width: size * 0.4, height: size * 0.2 }]} />
+        </View>
+      </View>
+    </Animated.View>
+  );
+};
+
+export default function LoginScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   
   // Form state
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
@@ -231,16 +353,21 @@ export default function SignupScreen() {
     };
   });
   
-  // Handle signup
-  const handleSignup = () => {
+  // Handle login
+  const handleLogin = () => {
     // In a real app, this would validate and submit the form
     // For now, just navigate to the main app
-    router.replace('/(tabs)');
+    router.push({ pathname: '/(tabs)' });
   };
   
-  // Handle navigation to login
-  const handleGoToLogin = () => {
-    router.push('login');
+  // Handle navigation to signup
+  const handleGoToSignup = () => {
+    router.push({ pathname: 'signup' });
+  };
+  
+  // Handle navigation to forgot password
+  const handleGoToForgotPassword = () => {
+    router.push({ pathname: 'forgot-password' });
   };
   
   return (
@@ -262,19 +389,19 @@ export default function SignupScreen() {
         type="circle" 
         size={40} 
         color={Colors.common.primary} 
-        style={{ position: 'absolute', top: '15%', left: '10%', opacity: 0.2 }}
+        style={{ position: 'absolute', top: '20%', right: '15%', opacity: 0.2 }}
       />
       <PlayfulShape 
-        type="star" 
+        type="cloud" 
         size={30} 
         color={Colors.common.accent} 
-        style={{ position: 'absolute', top: '25%', right: '15%', opacity: 0.2 }}
+        style={{ position: 'absolute', top: '10%', left: '10%', opacity: 0.2 }}
       />
       <PlayfulShape 
         type="triangle" 
         size={25} 
         color={Colors.common.teal} 
-        style={{ position: 'absolute', bottom: '30%', left: '15%', opacity: 0.15 }}
+        style={{ position: 'absolute', bottom: '20%', right: '10%', opacity: 0.15 }}
       />
       
       <ScrollView 
@@ -284,56 +411,58 @@ export default function SignupScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header with Sunny */}
         <Animated.View style={[styles.header, headerStyle]}>
-          <ThemedText type="title" style={styles.title}>Create Account</ThemedText>
+          <SunnyIcon size={80} />
+          <ThemedText type="title" style={styles.title}>Welcome Back!</ThemedText>
           <ThemedText style={styles.subtitle}>
-            Let's get started on your journey to brighter days
+            Log in to continue your journey
           </ThemedText>
         </Animated.View>
         
         {/* Form */}
         <View style={styles.form}>
           <AnimatedInputField
-            label="Full Name"
-            placeholder="Your name"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            delay={200}
-          />
-          
-          <AnimatedInputField
             label="Email"
             placeholder="your.email@example.com"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            delay={300}
+            delay={200}
           />
           
           <AnimatedInputField
             label="Password"
-            placeholder="Create a password"
+            placeholder="Your password"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
+            delay={300}
+          />
+          
+          {/* Forgot password link */}
+          <TouchableOpacity 
+            style={styles.forgotPasswordLink} 
+            onPress={handleGoToForgotPassword}
+          >
+            <ThemedText style={{ color: Colors.common.primary }}>
+              Forgot your password?
+            </ThemedText>
+          </TouchableOpacity>
+          
+          {/* Login button */}
+          <AnimatedButton 
+            text="Log In" 
+            onPress={handleLogin}
             delay={400}
           />
           
-          {/* Signup button */}
-          <AnimatedButton 
-            text="Create Account" 
-            onPress={handleSignup}
-            delay={500}
-          />
-          
-          {/* Login link */}
+          {/* Signup link */}
           <View style={styles.switchAuthContainer}>
-            <ThemedText>Already have an account? </ThemedText>
-            <TouchableOpacity onPress={handleGoToLogin}>
+            <ThemedText>Don't have an account? </ThemedText>
+            <TouchableOpacity onPress={handleGoToSignup}>
               <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold' }}>
-                Log In
+                Sign Up
               </ThemedText>
             </TouchableOpacity>
           </View>
@@ -367,6 +496,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 12,
+    marginTop: 20,
   },
   subtitle: {
     fontSize: 16,
@@ -404,6 +534,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+    marginTop: -10,
+  },
   switchAuthContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -437,5 +571,41 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderLeftColor: 'transparent',
     transform: [{ rotate: '180deg' }]
+  },
+  sunnyContainer: {
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sunCircle: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sunRay: {
+    position: 'absolute',
+    borderRadius: 4,
+  },
+  sunFace: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eyesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '50%',
+    marginBottom: 10,
+  },
+  eye: {
+    borderRadius: 5,
+    backgroundColor: '#8B4513',
+  },
+  smile: {
+    borderBottomWidth: 3,
+    borderBottomColor: '#8B4513',
+    borderRadius: 10,
   },
 });

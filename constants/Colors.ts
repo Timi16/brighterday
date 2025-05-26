@@ -80,5 +80,7 @@ export const Colors = {
     teal: calmTeal,
     sunnyGradient: ['#FFD966', '#FFB347'],
     primaryGradient: [primaryColor, '#5BA3D0'],
+    transparentPrimary: 'rgba(115, 194, 251, 0.2)',
+    transparentAccent: 'rgba(255, 217, 102, 0.2)',
   }
 };

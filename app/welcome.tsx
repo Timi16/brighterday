@@ -435,12 +435,12 @@ export default function WelcomeScreen() {
   
   // Handle get started press
   const handleGetStarted = () => {
-    router.push('/(auth)/signup');
+    router.push({ pathname: '/(auth)/signup' });
   };
   
   // Handle learn more press
   const handleLearnMore = () => {
-    router.push('/learn-more');
+    router.push({ pathname: '/learn-more' });
   };
   
   return (

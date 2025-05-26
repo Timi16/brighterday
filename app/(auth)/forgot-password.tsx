@@ -7,11 +7,11 @@ import {
   KeyboardAvoidingView, 
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import Animated, { 
   useSharedValue, 
@@ -37,7 +37,7 @@ const PlayfulShape = ({
   color, 
   style 
 }: { 
-  type: 'circle' | 'star' | 'triangle' | 'cloud', 
+  type: 'circle' | 'star' | 'triangle' | 'heart', 
   size: number, 
   color: string, 
   style?: any 
@@ -69,46 +69,38 @@ const PlayfulShape = ({
     };
   });
   
-  // Render a cloud shape
-  const renderCloud = () => (
+  // Render a heart shape
+  const renderHeart = () => (
     <View style={{
-      width: size * 1.8,
+      width: size,
       height: size,
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
+      transform: [{ rotate: '45deg' }]
     }}>
       <View style={{
-        width: size * 0.6,
-        height: size * 0.6,
-        borderRadius: size,
+        width: size * 0.7,
+        height: size * 0.7,
+        borderRadius: size * 0.35,
         backgroundColor: color,
         position: 'absolute',
-        left: size * 0.2,
-      }} />
-      <View style={{
-        width: size * 0.8,
-        height: size * 0.8,
-        borderRadius: size,
-        backgroundColor: color,
-        position: 'absolute',
-        left: size * 0.6,
+        top: 0,
+        left: 0,
       }} />
       <View style={{
         width: size * 0.7,
         height: size * 0.7,
-        borderRadius: size,
+        borderRadius: size * 0.35,
         backgroundColor: color,
         position: 'absolute',
-        left: size * 1,
+        top: 0,
+        right: 0,
       }} />
       <View style={{
-        width: size * 1.6,
-        height: size * 0.5,
-        borderRadius: size,
+        width: size * 0.7,
+        height: size * 0.7,
         backgroundColor: color,
         position: 'absolute',
-        bottom: size * 0.15,
+        bottom: 0,
+        left: size * 0.15,
       }} />
     </View>
   );
@@ -133,7 +125,7 @@ const PlayfulShape = ({
           { borderBottomWidth: size, borderLeftWidth: size / 2, borderRightWidth: size / 2, borderBottomColor: color }
         ]} />
       )}
-      {type === 'cloud' && renderCloud()}
+      {type === 'heart' && renderHeart()}
     </Animated.View>
   );
 };
@@ -142,7 +134,6 @@ const PlayfulShape = ({
 const AnimatedInputField = ({ 
   label, 
   placeholder, 
-  secureTextEntry = false,
   value,
   onChangeText,
   autoCapitalize = 'none',
@@ -151,7 +142,6 @@ const AnimatedInputField = ({
 }: { 
   label: string, 
   placeholder: string,
-  secureTextEntry?: boolean,
   value: string,
   onChangeText: (text: string) => void,
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters',
@@ -187,7 +177,6 @@ const AnimatedInputField = ({
         ]}
         placeholder={placeholder}
         placeholderTextColor={Colors[colorScheme ?? 'light'].textSecondary}
-        secureTextEntry={secureTextEntry}
         value={value}
         onChangeText={onChangeText}
         autoCapitalize={autoCapitalize}
@@ -251,91 +240,105 @@ const AnimatedButton = ({
   );
 };
 
-// Sunny icon component
-const SunnyIcon = ({ size = 60 }: { size?: number }) => {
-  const scale = useSharedValue(0.8);
-  const rotation = useSharedValue(0);
+// Envelope animation
+const EnvelopeAnimation = ({ size = 100 }: { size?: number }) => {
+  const colorScheme = useColorScheme();
+  const rotate = useSharedValue(0);
+  const scale = useSharedValue(0.5);
+  const flap = useSharedValue(-45); // Controls the envelope flap
   
   useEffect(() => {
-    // Gentle pulsing animation
-    scale.value = withRepeat(
+    // Animate in
+    scale.value = withTiming(1, { duration: 800, easing: Easing.out(Easing.back(1.5)) });
+    
+    // Gentle rotation
+    rotate.value = withRepeat(
       withSequence(
-        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.sin) })
+        withTiming(-0.03, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.03, { duration: 2000, easing: Easing.inOut(Easing.sin) })
       ),
       -1, // Infinite repeat
       true // Reverse
     );
     
-    // Gentle rotation animation
-    rotation.value = withRepeat(
-      withSequence(
-        withTiming(-0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) })
-      ),
-      -1, // Infinite repeat
-      true // Reverse
+    // Envelope flap animation
+    flap.value = withSequence(
+      withDelay(500, withTiming(0, { duration: 1000, easing: Easing.inOut(Easing.cubic) })), // Close flap
+      withDelay(1000, withTiming(-3, { duration: 300 })), // Small bounce
+      withTiming(0, { duration: 300 }) // Return to closed
     );
   }, []);
   
-  const animatedStyle = useAnimatedStyle(() => {
+  const envelopeStyle = useAnimatedStyle(() => {
     return {
       transform: [
-        { scale: scale.value },
-        { rotate: `${rotation.value * Math.PI}rad` }
+        { rotate: `${rotate.value * Math.PI}rad` },
+        { scale: scale.value }
       ],
     };
   });
   
+  const flapStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { rotateX: `${flap.value}deg` }
+      ],
+      // Adding z-index based on flap position to create a 3D effect
+      zIndex: flap.value < -20 ? 1 : 3,
+    };
+  });
+  
   return (
-    <Animated.View style={[styles.sunnyContainer, animatedStyle]}>
-      <View style={[styles.sunCircle, { 
-        width: size, 
-        height: size, 
-        borderRadius: size / 2, 
-        backgroundColor: Colors.common.accent 
-      }]}>
-        {/* Sun rays */}
-        {Array(8).fill(0).map((_, i) => (
-          <View 
-            key={`ray-${i}`} 
-            style={[
-              styles.sunRay, 
-              { 
-                backgroundColor: Colors.common.accent,
-                transform: [{ rotate: `${i * 45}deg` }],
-                width: size * 0.1,
-                height: size * 0.3,
-                top: -size * 0.15,
-                left: size * 0.45,
-              }
-            ]} 
-          />
-        ))}
-        
-        {/* Sun face */}
-        <View style={styles.sunFace}>
-          {/* Eyes */}
-          <View style={styles.eyesContainer}>
-            <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
-            <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
-          </View>
-          
-          {/* Smile */}
-          <View style={[styles.smile, { width: size * 0.4, height: size * 0.2 }]} />
+    <Animated.View style={[styles.envelopeContainer, envelopeStyle, { width: size, height: size * 0.7 }]}>
+      {/* Envelope body */}
+      <View style={[
+        styles.envelopeBody, 
+        { 
+          width: size, 
+          height: size * 0.7, 
+          borderRadius: 8,
+          backgroundColor: Colors.common.primary 
+        }
+      ]}>
+        {/* Envelope inner (letter) */}
+        <View style={[
+          styles.envelopeInner, 
+          { 
+            width: size * 0.85, 
+            height: size * 0.55, 
+            borderRadius: 6,
+            backgroundColor: '#FFFFFF'
+          }
+        ]}>
+          {/* Letter lines */}
+          <View style={[styles.letterLine, { width: size * 0.7, marginTop: size * 0.1 }]} />
+          <View style={[styles.letterLine, { width: size * 0.5, marginTop: size * 0.08 }]} />
+          <View style={[styles.letterLine, { width: size * 0.6, marginTop: size * 0.08 }]} />
         </View>
       </View>
+      
+      {/* Envelope flap */}
+      <Animated.View style={[
+        styles.envelopeFlap, 
+        flapStyle,
+        { 
+          width: size, 
+          height: size * 0.7, 
+          borderRadius: 8,
+          backgroundColor: Colors.common.primary
+        }
+      ]} />
     </Animated.View>
   );
 };
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   
   // Form state
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   
   // Header animation
   const headerOpacity = useSharedValue(0);
@@ -353,21 +356,30 @@ export default function LoginScreen() {
     };
   });
   
-  // Handle login
-  const handleLogin = () => {
-    // In a real app, this would validate and submit the form
-    // For now, just navigate to the main app
-    router.replace('/(tabs)');
+  // Handle reset password
+  const handleResetPassword = () => {
+    if (!email.trim()) {
+      Alert.alert('Email Required', 'Please enter your email address to reset your password.');
+      return;
+    }
+    
+    // In a real app, this would send a reset password email
+    setSubmitted(true);
+    
+    // Simulate success after 1.5 seconds and navigate back to login
+    setTimeout(() => {
+      router.push({ pathname: 'login' });
+    }, 3000);
   };
   
-  // Handle navigation to signup
-  const handleGoToSignup = () => {
-    router.push('signup');
+  // Handle back to login
+  const handleBackToLogin = () => {
+    router.push({ pathname: 'login' });
   };
   
-  // Handle navigation to forgot password
-  const handleGoToForgotPassword = () => {
-    router.push('forgot-password');
+  // Alternative path to login
+  const handleGoToLogin = () => {
+    router.push({ pathname: 'login' });
   };
   
   return (
@@ -387,21 +399,21 @@ export default function LoginScreen() {
       {/* Decorative shapes */}
       <PlayfulShape 
         type="circle" 
-        size={40} 
+        size={35} 
         color={Colors.common.primary} 
-        style={{ position: 'absolute', top: '20%', right: '15%', opacity: 0.2 }}
+        style={{ position: 'absolute', top: '15%', left: '12%', opacity: 0.15 }}
       />
       <PlayfulShape 
-        type="cloud" 
-        size={30} 
+        type="heart" 
+        size={25} 
         color={Colors.common.accent} 
-        style={{ position: 'absolute', top: '10%', left: '10%', opacity: 0.2 }}
+        style={{ position: 'absolute', top: '30%', right: '15%', opacity: 0.15 }}
       />
       <PlayfulShape 
         type="triangle" 
-        size={25} 
+        size={30} 
         color={Colors.common.teal} 
-        style={{ position: 'absolute', bottom: '20%', right: '10%', opacity: 0.15 }}
+        style={{ position: 'absolute', bottom: '25%', left: '15%', opacity: 0.15 }}
       />
       
       <ScrollView 
@@ -411,62 +423,64 @@ export default function LoginScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with Sunny */}
-        <Animated.View style={[styles.header, headerStyle]}>
-          <SunnyIcon size={80} />
-          <ThemedText type="title" style={styles.title}>Welcome Back!</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Log in to continue your journey
-          </ThemedText>
-        </Animated.View>
-        
-        {/* Form */}
-        <View style={styles.form}>
-          <AnimatedInputField
-            label="Email"
-            placeholder="your.email@example.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            delay={200}
-          />
-          
-          <AnimatedInputField
-            label="Password"
-            placeholder="Your password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            delay={300}
-          />
-          
-          {/* Forgot password link */}
-          <TouchableOpacity 
-            style={styles.forgotPasswordLink} 
-            onPress={handleGoToForgotPassword}
-          >
-            <ThemedText style={{ color: Colors.common.primary }}>
-              Forgot your password?
-            </ThemedText>
-          </TouchableOpacity>
-          
-          {/* Login button */}
-          <AnimatedButton 
-            text="Log In" 
-            onPress={handleLogin}
-            delay={400}
-          />
-          
-          {/* Signup link */}
-          <View style={styles.switchAuthContainer}>
-            <ThemedText>Don't have an account? </ThemedText>
-            <TouchableOpacity onPress={handleGoToSignup}>
-              <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold' }}>
-                Sign Up
+        {submitted ? (
+          // Success state
+          <View style={styles.successContainer}>
+            <EnvelopeAnimation size={150} />
+            
+            <Animated.View style={[styles.header, headerStyle, { marginTop: 40 }]}>
+              <ThemedText type="title" style={styles.title}>Email Sent!</ThemedText>
+              <ThemedText style={styles.subtitle}>
+                We've sent password reset instructions to your email.
               </ThemedText>
-            </TouchableOpacity>
+            </Animated.View>
+            
+            <AnimatedButton 
+              text="Back to Login" 
+              onPress={handleBackToLogin}
+              delay={500}
+              primary={false}
+            />
           </View>
-        </View>
+        ) : (
+          // Form state
+          <>
+            <Animated.View style={[styles.header, headerStyle]}>
+              <ThemedText type="title" style={styles.title}>Forgot Password?</ThemedText>
+              <ThemedText style={styles.subtitle}>
+                No worries! Enter your email and we'll send you instructions to reset your password.
+              </ThemedText>
+            </Animated.View>
+            
+            <View style={styles.form}>
+              <AnimatedInputField
+                label="Email"
+                placeholder="your.email@example.com"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                delay={200}
+              />
+              
+              {/* Reset button */}
+              <AnimatedButton 
+                text="Reset Password" 
+                onPress={handleResetPassword}
+                delay={300}
+              />
+              
+              {/* Back to login link */}
+              <TouchableOpacity 
+                style={styles.backToLoginLink}
+                onPress={handleBackToLogin}
+              >
+                <ThemedText style={{ color: Colors.common.primary, textAlign: 'center' }}>
+                  Remember your password? Log In
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -479,6 +493,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
+    justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -496,17 +511,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 12,
-    marginTop: 20,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
     opacity: 0.7,
-    maxWidth: '80%',
+    maxWidth: '90%',
   },
   form: {
     width: '100%',
-    gap: 20,
+    gap: 24,
   },
   inputContainer: {
     width: '100%',
@@ -528,20 +542,21 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 16,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
   },
-  forgotPasswordLink: {
-    alignSelf: 'flex-end',
-    marginTop: -10,
+  backToLoginLink: {
+    alignSelf: 'center',
+    marginTop: 16,
+    padding: 8,
   },
-  switchAuthContainer: {
-    flexDirection: 'row',
+  successContainer: {
+    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
+    paddingVertical: 30,
   },
   shapeContainer: {
     justifyContent: 'center',
@@ -572,40 +587,33 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     transform: [{ rotate: '180deg' }]
   },
-  sunnyContainer: {
-    width: 80,
-    height: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sunCircle: {
+  envelopeContainer: {
     position: 'relative',
+    marginBottom: 20,
+  },
+  envelopeBody: {
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
-  sunRay: {
+  envelopeFlap: {
     position: 'absolute',
-    borderRadius: 4,
+    top: 0,
+    left: 0,
+    transform: [{ rotateX: '-45deg' }],
+    transformOrigin: 'top',
+    backfaceVisibility: 'hidden',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    height: '50%',
+    zIndex: 2,
   },
-  sunFace: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
+  envelopeInner: {
     alignItems: 'center',
   },
-  eyesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '50%',
-    marginBottom: 10,
-  },
-  eye: {
-    borderRadius: 5,
-    backgroundColor: '#8B4513',
-  },
-  smile: {
-    borderBottomWidth: 3,
-    borderBottomColor: '#8B4513',
-    borderRadius: 10,
+  letterLine: {
+    height: 2,
+    backgroundColor: '#E1E1E1',
+    borderRadius: 1,
   },
 });

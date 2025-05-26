@@ -7,11 +7,11 @@ import {
   KeyboardAvoidingView, 
   Platform,
   ScrollView,
-  Dimensions,
-  Alert
+  Dimensions
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import Animated, { 
   useSharedValue, 
@@ -37,7 +37,7 @@ const PlayfulShape = ({
   color, 
   style 
 }: { 
-  type: 'circle' | 'star' | 'triangle' | 'heart', 
+  type: 'circle' | 'star' | 'triangle', 
   size: number, 
   color: string, 
   style?: any 
@@ -69,42 +69,6 @@ const PlayfulShape = ({
     };
   });
   
-  // Render a heart shape
-  const renderHeart = () => (
-    <View style={{
-      width: size,
-      height: size,
-      transform: [{ rotate: '45deg' }]
-    }}>
-      <View style={{
-        width: size * 0.7,
-        height: size * 0.7,
-        borderRadius: size * 0.35,
-        backgroundColor: color,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-      }} />
-      <View style={{
-        width: size * 0.7,
-        height: size * 0.7,
-        borderRadius: size * 0.35,
-        backgroundColor: color,
-        position: 'absolute',
-        top: 0,
-        right: 0,
-      }} />
-      <View style={{
-        width: size * 0.7,
-        height: size * 0.7,
-        backgroundColor: color,
-        position: 'absolute',
-        bottom: 0,
-        left: size * 0.15,
-      }} />
-    </View>
-  );
-  
   return (
     <Animated.View style={[styles.shapeContainer, animatedStyle, style]}>
       {type === 'circle' && (
@@ -125,7 +89,6 @@ const PlayfulShape = ({
           { borderBottomWidth: size, borderLeftWidth: size / 2, borderRightWidth: size / 2, borderBottomColor: color }
         ]} />
       )}
-      {type === 'heart' && renderHeart()}
     </Animated.View>
   );
 };
@@ -134,6 +97,7 @@ const PlayfulShape = ({
 const AnimatedInputField = ({ 
   label, 
   placeholder, 
+  secureTextEntry = false,
   value,
   onChangeText,
   autoCapitalize = 'none',
@@ -142,6 +106,7 @@ const AnimatedInputField = ({
 }: { 
   label: string, 
   placeholder: string,
+  secureTextEntry?: boolean,
   value: string,
   onChangeText: (text: string) => void,
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters',
@@ -177,6 +142,7 @@ const AnimatedInputField = ({
         ]}
         placeholder={placeholder}
         placeholderTextColor={Colors[colorScheme ?? 'light'].textSecondary}
+        secureTextEntry={secureTextEntry}
         value={value}
         onChangeText={onChangeText}
         autoCapitalize={autoCapitalize}
@@ -240,105 +206,14 @@ const AnimatedButton = ({
   );
 };
 
-// Envelope animation
-const EnvelopeAnimation = ({ size = 100 }: { size?: number }) => {
-  const colorScheme = useColorScheme();
-  const rotate = useSharedValue(0);
-  const scale = useSharedValue(0.5);
-  const flap = useSharedValue(-45); // Controls the envelope flap
-  
-  useEffect(() => {
-    // Animate in
-    scale.value = withTiming(1, { duration: 800, easing: Easing.out(Easing.back(1.5)) });
-    
-    // Gentle rotation
-    rotate.value = withRepeat(
-      withSequence(
-        withTiming(-0.03, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0.03, { duration: 2000, easing: Easing.inOut(Easing.sin) })
-      ),
-      -1, // Infinite repeat
-      true // Reverse
-    );
-    
-    // Envelope flap animation
-    flap.value = withSequence(
-      withDelay(500, withTiming(0, { duration: 1000, easing: Easing.inOut(Easing.cubic) })), // Close flap
-      withDelay(1000, withTiming(-3, { duration: 300 })), // Small bounce
-      withTiming(0, { duration: 300 }) // Return to closed
-    );
-  }, []);
-  
-  const envelopeStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { rotate: `${rotate.value * Math.PI}rad` },
-        { scale: scale.value }
-      ],
-    };
-  });
-  
-  const flapStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { rotateX: `${flap.value}deg` }
-      ],
-      // Adding z-index based on flap position to create a 3D effect
-      zIndex: flap.value < -20 ? 1 : 3,
-    };
-  });
-  
-  return (
-    <Animated.View style={[styles.envelopeContainer, envelopeStyle, { width: size, height: size * 0.7 }]}>
-      {/* Envelope body */}
-      <View style={[
-        styles.envelopeBody, 
-        { 
-          width: size, 
-          height: size * 0.7, 
-          borderRadius: 8,
-          backgroundColor: Colors.common.primary 
-        }
-      ]}>
-        {/* Envelope inner (letter) */}
-        <View style={[
-          styles.envelopeInner, 
-          { 
-            width: size * 0.85, 
-            height: size * 0.55, 
-            borderRadius: 6,
-            backgroundColor: '#FFFFFF'
-          }
-        ]}>
-          {/* Letter lines */}
-          <View style={[styles.letterLine, { width: size * 0.7, marginTop: size * 0.1 }]} />
-          <View style={[styles.letterLine, { width: size * 0.5, marginTop: size * 0.08 }]} />
-          <View style={[styles.letterLine, { width: size * 0.6, marginTop: size * 0.08 }]} />
-        </View>
-      </View>
-      
-      {/* Envelope flap */}
-      <Animated.View style={[
-        styles.envelopeFlap, 
-        flapStyle,
-        { 
-          width: size, 
-          height: size * 0.7, 
-          borderRadius: 8,
-          backgroundColor: Colors.common.primary
-        }
-      ]} />
-    </Animated.View>
-  );
-};
-
-export default function ForgotPasswordScreen() {
+export default function SignupScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   
   // Form state
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [password, setPassword] = useState('');
   
   // Header animation
   const headerOpacity = useSharedValue(0);
@@ -356,25 +231,16 @@ export default function ForgotPasswordScreen() {
     };
   });
   
-  // Handle reset password
-  const handleResetPassword = () => {
-    if (!email.trim()) {
-      Alert.alert('Email Required', 'Please enter your email address to reset your password.');
-      return;
-    }
-    
-    // In a real app, this would send a reset password email
-    setSubmitted(true);
-    
-    // Simulate success after 1.5 seconds and navigate back to login
-    setTimeout(() => {
-      router.push('/auth/login');
-    }, 3000);
+  // Handle signup
+  const handleSignup = () => {
+    // In a real app, this would validate and submit the form
+    // For now, just navigate to the main app
+    router.push({ pathname: '/(tabs)' });
   };
   
-  // Handle back to login
-  const handleBackToLogin = () => {
-    router.push('login');
+  // Handle navigation to login
+  const handleGoToLogin = () => {
+    router.push({ pathname: 'login' });
   };
   
   return (
@@ -394,21 +260,21 @@ export default function ForgotPasswordScreen() {
       {/* Decorative shapes */}
       <PlayfulShape 
         type="circle" 
-        size={35} 
+        size={40} 
         color={Colors.common.primary} 
-        style={{ position: 'absolute', top: '15%', left: '12%', opacity: 0.15 }}
+        style={{ position: 'absolute', top: '15%', left: '10%', opacity: 0.2 }}
       />
       <PlayfulShape 
-        type="heart" 
-        size={25} 
+        type="star" 
+        size={30} 
         color={Colors.common.accent} 
-        style={{ position: 'absolute', top: '30%', right: '15%', opacity: 0.15 }}
+        style={{ position: 'absolute', top: '25%', right: '15%', opacity: 0.2 }}
       />
       <PlayfulShape 
         type="triangle" 
-        size={30} 
+        size={25} 
         color={Colors.common.teal} 
-        style={{ position: 'absolute', bottom: '25%', left: '15%', opacity: 0.15 }}
+        style={{ position: 'absolute', bottom: '30%', left: '15%', opacity: 0.15 }}
       />
       
       <ScrollView 
@@ -418,64 +284,60 @@ export default function ForgotPasswordScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {submitted ? (
-          // Success state
-          <View style={styles.successContainer}>
-            <EnvelopeAnimation size={150} />
-            
-            <Animated.View style={[styles.header, headerStyle, { marginTop: 40 }]}>
-              <ThemedText type="title" style={styles.title}>Email Sent!</ThemedText>
-              <ThemedText style={styles.subtitle}>
-                We've sent password reset instructions to your email.
+        {/* Header */}
+        <Animated.View style={[styles.header, headerStyle]}>
+          <ThemedText type="title" style={styles.title}>Create Account</ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Let's get started on your journey to brighter days
+          </ThemedText>
+        </Animated.View>
+        
+        {/* Form */}
+        <View style={styles.form}>
+          <AnimatedInputField
+            label="Full Name"
+            placeholder="Your name"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+            delay={200}
+          />
+          
+          <AnimatedInputField
+            label="Email"
+            placeholder="your.email@example.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            delay={300}
+          />
+          
+          <AnimatedInputField
+            label="Password"
+            placeholder="Create a password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            delay={400}
+          />
+          
+          {/* Signup button */}
+          <AnimatedButton 
+            text="Create Account" 
+            onPress={handleSignup}
+            delay={500}
+          />
+          
+          {/* Login link */}
+          <View style={styles.switchAuthContainer}>
+            <ThemedText>Already have an account? </ThemedText>
+            <TouchableOpacity onPress={handleGoToLogin}>
+              <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold' }}>
+                Log In
               </ThemedText>
-            </Animated.View>
-            
-            <AnimatedButton 
-              text="Back to Login" 
-              onPress={handleBackToLogin}
-              delay={500}
-              primary={false}
-            />
+            </TouchableOpacity>
           </View>
-        ) : (
-          // Form state
-          <>
-            <Animated.View style={[styles.header, headerStyle]}>
-              <ThemedText type="title" style={styles.title}>Forgot Password?</ThemedText>
-              <ThemedText style={styles.subtitle}>
-                No worries! Enter your email and we'll send you instructions to reset your password.
-              </ThemedText>
-            </Animated.View>
-            
-            <View style={styles.form}>
-              <AnimatedInputField
-                label="Email"
-                placeholder="your.email@example.com"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                delay={200}
-              />
-              
-              {/* Reset button */}
-              <AnimatedButton 
-                text="Reset Password" 
-                onPress={handleResetPassword}
-                delay={300}
-              />
-              
-              {/* Back to login link */}
-              <TouchableOpacity 
-                style={styles.backToLoginLink}
-                onPress={handleBackToLogin}
-              >
-                <ThemedText style={{ color: Colors.common.primary, textAlign: 'center' }}>
-                  Remember your password? Log In
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -488,7 +350,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -511,11 +372,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     opacity: 0.7,
-    maxWidth: '90%',
+    maxWidth: '80%',
   },
   form: {
     width: '100%',
-    gap: 24,
+    gap: 20,
   },
   inputContainer: {
     width: '100%',
@@ -537,21 +398,16 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
   },
-  backToLoginLink: {
-    alignSelf: 'center',
-    marginTop: 16,
-    padding: 8,
-  },
-  successContainer: {
-    alignItems: 'center',
+  switchAuthContainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: 30,
+    marginTop: 24,
   },
   shapeContainer: {
     justifyContent: 'center',
@@ -581,34 +437,5 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderLeftColor: 'transparent',
     transform: [{ rotate: '180deg' }]
-  },
-  envelopeContainer: {
-    position: 'relative',
-    marginBottom: 20,
-  },
-  envelopeBody: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  envelopeFlap: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    transform: [{ rotateX: '-45deg' }],
-    transformOrigin: 'top',
-    backfaceVisibility: 'hidden',
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    height: '50%',
-    zIndex: 2,
-  },
-  envelopeInner: {
-    alignItems: 'center',
-  },
-  letterLine: {
-    height: 2,
-    backgroundColor: '#E1E1E1',
-    borderRadius: 1,
   },
 });
