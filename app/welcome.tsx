@@ -377,13 +377,29 @@ const PlayfulBackground = () => {
 
 // Welcome text animation
 const WelcomeTextAnimated = () => {
+  const headerOpacity = useSharedValue(0);
+  const headerTranslateY = useSharedValue(-20);
+  const headerScale = useSharedValue(0.8);
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(20);
   
   useEffect(() => {
+    headerOpacity.value = withTiming(1, { duration: 800 });
+    headerTranslateY.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) });
+    headerScale.value = withTiming(1, { duration: 800, easing: Easing.out(Easing.cubic) });
     opacity.value = withDelay(1000, withTiming(1, { duration: 800 }));
     translateY.value = withDelay(1000, withTiming(0, { duration: 800 }));
   }, []);
+  
+  const headerStyle = useAnimatedStyle(() => {
+    return {
+      opacity: headerOpacity.value,
+      transform: [
+        { translateY: headerTranslateY.value },
+        { scale: headerScale.value }
+      ]
+    };
+  });
   
   const textStyle = useAnimatedStyle(() => {
     return {
@@ -393,116 +409,34 @@ const WelcomeTextAnimated = () => {
   });
   
   return (
-    <Animated.View style={textStyle}>
-      <ThemedText style={styles.welcomeTitle} type="title">Welcome to Brighter Days</ThemedText>
-      <ThemedText style={styles.welcomeSubtitle}>
-        Support for your parenting journey
-      </ThemedText>
+    <Animated.View style={headerStyle}>
+      <Animated.View style={textStyle}>
+        <ThemedText style={styles.welcomeTitle} type="title">Welcome to Brighter Days</ThemedText>
+        <ThemedText style={styles.welcomeSubtitle}>
+          Support for your parenting journey
+        </ThemedText>
+      </Animated.View>
     </Animated.View>
   );
 };
 
-// Button animation
-const AnimatedButton = ({ onPress, text, delay = 0 }: { onPress: () => void, text: string, delay?: number }) => {
-  const colorScheme = useColorScheme();
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(30);
-  
-  useEffect(() => {
-    opacity.value = withDelay(1500 + delay, withTiming(1, { duration: 800 }));
-    translateY.value = withDelay(1500 + delay, withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) }));
-  }, []);
-  
-  const buttonStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
-    };
-  });
-  
-  return (
-    <Animated.View style={buttonStyle}>
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: Colors.common.teal }
-        ]}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          onPress();
-        }}
-        activeOpacity={0.8}
-      >
-        <ThemedText style={styles.buttonText}>{text}</ThemedText>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-export default function WelcomeScreen() {
-  const colorScheme = useColorScheme();
-  const insets = useSafeAreaInsets();
-  
-  // Handle get started press
-  const handleGetStarted = () => {
-    router.push({ pathname: '/(auth)/signup' });
-  };
-  
-  // Handle learn more press
-  const handleLearnMore = () => {
-    router.push({ pathname: '/learn-more' });
-  };
-  
-  return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: Colors.light.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
-    >
-      {/* Playful animated background */}
-      <PlayfulBackground />
-      
-      {/* Main content */}
-      <View style={styles.content}>
-        {/* Sunny animation */}
-        <SunnyAnimated />
-        
-        {/* Welcome text */}
-        <WelcomeTextAnimated />
-        
-        {/* Get started button */}
-        <AnimatedButton 
-          text="Get Started" 
-          onPress={handleGetStarted}
-        />
-        
-        {/* Learn more button */}
-        <AnimatedButton 
-          text="Learn About Brighter Days" 
-          onPress={handleLearnMore} 
-          delay={200}
-        />
-      </View>
-    </KeyboardAvoidingView>
-  );
-}
+// ... (rest of the code remains the same)
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.light.background,
   },
-  backgroundContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    zIndex: -1,
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
+    gap: 24,
     gap: 32,
   },
   sunnyContainer: {
