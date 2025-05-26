@@ -368,19 +368,20 @@ export default function ForgotPasswordScreen() {
     
     // Simulate success after 1.5 seconds and navigate back to login
     setTimeout(() => {
-      router.push({ pathname: 'login' });
+      router.push({ pathname: '/(auth)/login' });
     }, 3000);
   };
   
   // Handle back to login
   const handleBackToLogin = () => {
-    router.push({ pathname: 'login' });
+    router.push({ pathname: '/(auth)/login' });
   };
   
   // Alternative path to login
   const handleGoToLogin = () => {
-    router.push({ pathname: 'login' });
+    router.push({ pathname: '/(auth)/login' });
   };
+  
   
   return (
     <KeyboardAvoidingView
