@@ -362,12 +362,12 @@ export default function LoginScreen() {
   
   // Handle navigation to signup
   const handleGoToSignup = () => {
-    router.push({ pathname: 'signup' });
+    router.push({ pathname: '/(auth)/signup' });
   };
   
   // Handle navigation to forgot password
   const handleGoToForgotPassword = () => {
-    router.push({ pathname: 'forgot-password' });
+    router.push({ pathname: '/(auth)/forgot-password' });
   };
   
   return (
