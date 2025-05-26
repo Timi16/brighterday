@@ -98,61 +98,268 @@ const SunnyAnimated = () => {
   );
 };
 
-// Animated background bubbles
-const BackgroundBubbles = () => {
+// Playful background elements
+const PlayfulBackground = () => {
   const colorScheme = useColorScheme();
-  const bubbles = Array(6).fill(0).map((_, i) => ({
-    id: i,
-    size: Math.random() * 100 + 50,
-    x: Math.random() * width,
-    y: Math.random() * height,
-    delay: i * 400,
-  }));
+  
+  // Create different playful shapes
+  const shapes = [
+    // Circles
+    ...Array(5).fill(0).map((_, i) => ({
+      id: `circle-${i}`,
+      type: 'circle',
+      size: Math.random() * 50 + 20,
+      x: Math.random() * width,
+      y: Math.random() * height,
+      delay: i * 300,
+      color: i % 3 === 0 ? Colors.common.primary : 
+             i % 3 === 1 ? Colors.common.accent : 
+             Colors.common.teal,
+      opacity: 0.12 + (Math.random() * 0.08)
+    })),
+    
+    // Stars
+    ...Array(4).fill(0).map((_, i) => ({
+      id: `star-${i}`,
+      type: 'star',
+      size: Math.random() * 30 + 15,
+      x: Math.random() * width,
+      y: Math.random() * height,
+      delay: i * 400 + 200,
+      color: i % 2 === 0 ? Colors.common.accent : Colors.common.teal,
+      opacity: 0.15 + (Math.random() * 0.1)
+    })),
+    
+    // Clouds
+    ...Array(3).fill(0).map((_, i) => ({
+      id: `cloud-${i}`,
+      type: 'cloud',
+      size: Math.random() * 60 + 40,
+      x: Math.random() * width,
+      y: Math.random() * (height / 2),
+      delay: i * 500 + 100,
+      color: '#FFFFFF',
+      opacity: 0.2 + (Math.random() * 0.1)
+    })),
+  ];
+  
+  // Render a star shape
+  const renderStar = (size: number) => (
+    <View style={{
+      width: size,
+      height: size,
+      position: 'relative',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <View style={{
+        width: size,
+        height: size * 0.4,
+        backgroundColor: 'currentColor',
+        borderRadius: size / 10,
+        position: 'absolute',
+        transform: [{ rotate: '0deg' }]
+      }} />
+      <View style={{
+        width: size,
+        height: size * 0.4,
+        backgroundColor: 'currentColor',
+        borderRadius: size / 10,
+        position: 'absolute',
+        transform: [{ rotate: '72deg' }]
+      }} />
+      <View style={{
+        width: size,
+        height: size * 0.4,
+        backgroundColor: 'currentColor',
+        borderRadius: size / 10,
+        position: 'absolute',
+        transform: [{ rotate: '144deg' }]
+      }} />
+      <View style={{
+        width: size,
+        height: size * 0.4,
+        backgroundColor: 'currentColor',
+        borderRadius: size / 10,
+        position: 'absolute',
+        transform: [{ rotate: '-72deg' }]
+      }} />
+      <View style={{
+        width: size,
+        height: size * 0.4,
+        backgroundColor: 'currentColor',
+        borderRadius: size / 10,
+        position: 'absolute',
+        transform: [{ rotate: '-144deg' }]
+      }} />
+    </View>
+  );
+  
+  // Render a cloud shape
+  const renderCloud = (size: number) => (
+    <View style={{
+      width: size * 1.8,
+      height: size,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <View style={{
+        width: size * 0.6,
+        height: size * 0.6,
+        borderRadius: size,
+        backgroundColor: 'currentColor',
+        position: 'absolute',
+        left: size * 0.2,
+      }} />
+      <View style={{
+        width: size * 0.8,
+        height: size * 0.8,
+        borderRadius: size,
+        backgroundColor: 'currentColor',
+        position: 'absolute',
+        left: size * 0.6,
+      }} />
+      <View style={{
+        width: size * 0.7,
+        height: size * 0.7,
+        borderRadius: size,
+        backgroundColor: 'currentColor',
+        position: 'absolute',
+        left: size * 1,
+      }} />
+      <View style={{
+        width: size * 1.6,
+        height: size * 0.5,
+        borderRadius: size,
+        backgroundColor: 'currentColor',
+        position: 'absolute',
+        bottom: size * 0.15,
+      }} />
+    </View>
+  );
   
   return (
-    <View style={styles.bubblesContainer}>
-      {bubbles.map((bubble) => {
-        const translateY = useSharedValue(bubble.y);
+    <View style={styles.backgroundContainer}>
+      {shapes.map((shape) => {
+        const translateX = useSharedValue(0);
+        const translateY = useSharedValue(0);
         const opacity = useSharedValue(0);
         const scale = useSharedValue(0.5);
+        const rotate = useSharedValue(0);
         
         useEffect(() => {
-          // Start animation after delay
-          translateY.value = withDelay(
-            bubble.delay,
-            withRepeat(
-              withTiming(bubble.y - 200, { duration: 15000, easing: Easing.linear }),
-              -1,
-              false
-            )
-          );
-          
+          // Start animations after delay
           opacity.value = withDelay(
-            bubble.delay,
-            withTiming(0.15, { duration: 1000 })
+            shape.delay,
+            withTiming(shape.opacity, { duration: 1000 })
           );
           
           scale.value = withDelay(
-            bubble.delay,
+            shape.delay,
             withTiming(1, { duration: 1000 })
           );
+          
+          // Different movement for different shapes
+          if (shape.type === 'circle') {
+            // Gentle floating animation
+            translateY.value = withDelay(
+              shape.delay,
+              withRepeat(
+                withSequence(
+                  withTiming(-15, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
+                  withTiming(15, { duration: 3000, easing: Easing.inOut(Easing.sin) })
+                ),
+                -1,
+                true
+              )
+            );
+            
+            // Slight rotation
+            rotate.value = withDelay(
+              shape.delay,
+              withRepeat(
+                withTiming(Math.PI * 2, { duration: 20000, easing: Easing.linear }),
+                -1,
+                false
+              )
+            );
+          } else if (shape.type === 'star') {
+            // Gentle twinkling
+            scale.value = withDelay(
+              shape.delay,
+              withRepeat(
+                withSequence(
+                  withTiming(1, { duration: 1000 }),
+                  withTiming(0.85, { duration: 1000 }),
+                  withTiming(1.1, { duration: 800 }),
+                  withTiming(0.9, { duration: 1200 }),
+                  withTiming(1, { duration: 1000 })
+                ),
+                -1,
+                false
+              )
+            );
+            
+            // Slow rotation
+            rotate.value = withDelay(
+              shape.delay,
+              withRepeat(
+                withTiming(Math.PI / 6, { duration: 10000, easing: Easing.inOut(Easing.sin) }),
+                -1,
+                true
+              )
+            );
+          } else if (shape.type === 'cloud') {
+            // Slow horizontal movement
+            translateX.value = withDelay(
+              shape.delay,
+              withRepeat(
+                withSequence(
+                  withTiming(width / 2, { duration: 40000, easing: Easing.linear }),
+                  withTiming(-width / 2, { duration: 0 }) // Reset position
+                ),
+                -1,
+                false
+              )
+            );
+          }
         }, []);
         
-        const bubbleStyle = useAnimatedStyle(() => {
+        const shapeStyle = useAnimatedStyle(() => {
           return {
             position: 'absolute',
-            left: bubble.x,
-            top: translateY.value,
-            width: bubble.size,
-            height: bubble.size,
-            borderRadius: bubble.size / 2,
+            left: shape.x + translateX.value,
+            top: shape.y + translateY.value,
             opacity: opacity.value,
-            transform: [{ scale: scale.value }],
-            backgroundColor: bubble.id % 2 === 0 ? Colors.common.primary : Colors.common.accent,
+            transform: [
+              { scale: scale.value },
+              { rotate: `${rotate.value}rad` }
+            ],
           };
         });
         
-        return <Animated.View key={bubble.id} style={bubbleStyle} />;
+        return (
+          <Animated.View 
+            key={shape.id} 
+            style={[shapeStyle, { zIndex: -1 }]}
+          >
+            <View style={{ color: shape.color }}>
+              {shape.type === 'circle' && (
+                <View 
+                  style={{
+                    width: shape.size,
+                    height: shape.size,
+                    borderRadius: shape.size / 2,
+                    backgroundColor: 'currentColor',
+                  }}
+                />
+              )}
+              {shape.type === 'star' && renderStar(shape.size)}
+              {shape.type === 'cloud' && renderCloud(shape.size)}
+            </View>
+          </Animated.View>
+        );
       })}
     </View>
   );
@@ -228,7 +435,12 @@ export default function WelcomeScreen() {
   
   // Handle get started press
   const handleGetStarted = () => {
-    router.replace('/(tabs)');
+    router.push('/auth/signup');
+  };
+  
+  // Handle learn more press
+  const handleLearnMore = () => {
+    router.push('/learn-more');
   };
   
   return (
@@ -236,14 +448,14 @@ export default function WelcomeScreen() {
       style={[
         styles.container, 
         { 
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          backgroundColor: '#FFFFFF', // Pure white background for kid-friendly look
           paddingTop: insets.top,
           paddingBottom: insets.bottom,
         }
       ]}
     >
-      {/* Animated background */}
-      <BackgroundBubbles />
+      {/* Playful animated background */}
+      <PlayfulBackground />
       
       {/* Main content */}
       <View style={styles.content}>
@@ -262,7 +474,7 @@ export default function WelcomeScreen() {
         {/* Learn more button */}
         <AnimatedButton 
           text="Learn About Brighter Days" 
-          onPress={() => {/* Would navigate to About screen */}} 
+          onPress={handleLearnMore} 
           delay={200}
         />
       </View>
@@ -275,10 +487,11 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
   },
-  bubblesContainer: {
+  backgroundContainer: {
     position: 'absolute',
     width: '100%',
     height: '100%',
+    zIndex: -1,
   },
   content: {
     flex: 1,
