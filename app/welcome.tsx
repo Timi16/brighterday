@@ -1,5 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { 
+  StyleSheet, 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  Platform,
+  ScrollView,
+  Dimensions,
+  Alert
+} from 'react-native';
+import { KeyboardAvoidingView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -444,15 +454,10 @@ export default function WelcomeScreen() {
   };
   
   return (
-    <ThemedView 
-      style={[
-        styles.container, 
-        { 
-          backgroundColor: '#FFFFFF', // Pure white background for kid-friendly look
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-        }
-      ]}
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: Colors.light.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
     >
       {/* Playful animated background */}
       <PlayfulBackground />
@@ -478,14 +483,14 @@ export default function WelcomeScreen() {
           delay={200}
         />
       </View>
-    </ThemedView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    overflow: 'hidden',
+    backgroundColor: Colors.light.background,
   },
   backgroundContainer: {
     position: 'absolute',
