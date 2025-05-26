@@ -240,7 +240,7 @@ export default function SignupScreen() {
   
   // Handle navigation to login
   const handleGoToLogin = () => {
-    router.push({ pathname: 'login' });
+    router.push({ pathname: '/(auth)/login' });
   };
   
   return (
