@@ -359,6 +359,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
+    paddingTop: 10, // Reduced padding to fit content better
   },
   backButton: {
     position: 'absolute',
@@ -368,21 +369,22 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   header: {
-    marginBottom: 40,
+    marginBottom: 20, // Reduced from 40
     alignItems: 'center',
+    paddingTop: 10, // Added padding at top
   },
   title: {
-    fontSize: 30,
+    fontSize: 28, // Reduced from 30
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10, // Reduced from 20
     color: '#333333',
   },
   subtitle: {
-    fontSize: 17,
+    fontSize: 16, // Reduced from 17
     textAlign: 'center',
     color: '#555555',
-    marginBottom: 30,
+    marginBottom: 20, // Reduced from 30
   },
   form: {
     width: '100%',
