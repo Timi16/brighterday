@@ -113,7 +113,6 @@ const AnimatedInputField = ({
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad',
   delay?: number
 }) => {
-  const colorScheme = useColorScheme();
   const translateY = useSharedValue(20);
   const opacity = useSharedValue(0);
   
@@ -131,17 +130,22 @@ const AnimatedInputField = ({
   
   return (
     <Animated.View style={[styles.inputContainer, animatedStyle]}>
-      <ThemedText style={styles.inputLabel}>{label}</ThemedText>
+      <ThemedText style={{fontSize: 16, marginBottom: 8, color: '#333333', fontWeight: '500'}}>{label}</ThemedText>
       <TextInput
-        style={[
-          styles.input,
-          { 
-            backgroundColor: Colors[colorScheme ?? 'light'].input,
-            color: Colors[colorScheme ?? 'light'].text,
-          }
-        ]}
+        style={{
+          height: 56,
+          width: '100%',
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          fontSize: 16,
+          marginBottom: 16,
+          backgroundColor: '#f5f5f5',
+          color: '#333333',
+          borderWidth: 1,
+          borderColor: '#e0e0e0',
+        }}
         placeholder={placeholder}
-        placeholderTextColor={Colors[colorScheme ?? 'light'].textSecondary}
+        placeholderTextColor={'#999999'}
         secureTextEntry={secureTextEntry}
         value={value}
         onChangeText={onChangeText}
@@ -254,7 +258,7 @@ export default function SignupScreen() {
         style={[styles.backButton, { marginTop: insets.top || 20 }]}
         onPress={() => router.back()}
       >
-        <ThemedText>← Back</ThemedText>
+        <ThemedText style={{ color: Colors.common.teal, fontWeight: '500' }}>← Back</ThemedText>
       </TouchableOpacity>
       
       {/* Decorative shapes */}
