@@ -168,15 +168,15 @@ const AnimatedInputField = ({
   
   return (
     <Animated.View style={[styles.inputContainer, animatedStyle]}>
-      <ThemedText style={{fontSize: 16, marginBottom: 8, color: '#333333', fontWeight: '500'}}>{label}</ThemedText>
+      <ThemedText style={{fontSize: 14, marginBottom: 5, color: '#333333', fontWeight: '500'}}>{label}</ThemedText>
       <TextInput
         style={{
-          height: 56,
+          height: 45, // Reduced from 56
           width: '100%',
-          borderRadius: 12,
-          paddingHorizontal: 16,
-          fontSize: 16,
-          marginBottom: 16,
+          borderRadius: 10, // Reduced from 12
+          paddingHorizontal: 12, // Reduced from 16
+          fontSize: 14, // Reduced from 16
+          marginBottom: 8, // Reduced from 16
           backgroundColor: '#f5f5f5',
           color: '#333333',
           borderWidth: 1,
@@ -479,12 +479,12 @@ export default function ForgotPasswordScreen() {
                 delay={300}
               />
               
-              {/* Back to login link */}
+              {/* Back to login link - more compact */}
               <TouchableOpacity 
-                style={styles.backToLoginLink}
+                style={[styles.backToLoginLink, {marginTop: 5}]}
                 onPress={handleBackToLogin}
               >
-                <ThemedText style={{ color: Colors.common.primary, textAlign: 'center' }}>
+                <ThemedText style={{ color: Colors.common.primary, textAlign: 'center', fontSize: 13 }}>
                   Remember your password? Log In
                 </ThemedText>
               </TouchableOpacity>
@@ -557,18 +557,18 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   button: {
-    height: 56,
+    height: 45, // Reduced from 56
     width: '100%',
     backgroundColor: Colors.common.teal,
-    borderRadius: 12,
+    borderRadius: 10, // Reduced from 12
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 8, // Reduced from 24
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 2,
+    elevation: 2,
   },
   buttonText: {
     fontSize: 18,

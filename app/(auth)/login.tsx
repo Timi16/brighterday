@@ -179,12 +179,12 @@ const AnimatedInputField = ({
       <ThemedText style={{fontSize: 16, marginBottom: 8, color: '#333333', fontWeight: '500'}}>{label}</ThemedText>
       <TextInput
         style={{
-          height: 56,
+          height: 45, // Reduced from 56
           width: '100%',
-          borderRadius: 12,
-          paddingHorizontal: 16,
-          fontSize: 16,
-          marginBottom: 16,
+          borderRadius: 10, // Reduced from 12
+          paddingHorizontal: 12, // Reduced from 16
+          fontSize: 14, // Reduced from 16
+          marginBottom: 8, // Reduced from 16
           backgroundColor: '#f5f5f5',
           color: '#333333',
           borderWidth: 1,
@@ -434,7 +434,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            delay={200}
+            delay={100}
           />
           
           <AnimatedInputField
@@ -443,12 +443,15 @@ export default function LoginScreen() {
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            delay={300}
+            delay={150}
           />
           
-          {/* Forgot password link */}
-          <TouchableOpacity style={styles.forgotPassword} onPress={handleGoToForgotPassword}>
-            <ThemedText style={{ color: Colors.common.primary }}>
+          {/* Forgot password link - made more compact */}
+          <TouchableOpacity
+            style={[styles.forgotPassword, { marginTop: 2, marginBottom: 5 }]}
+            onPress={handleGoToForgotPassword}
+          >
+            <ThemedText style={{ color: Colors.common.primary, textAlign: 'right', fontSize: 13 }}>
               Forgot your password?
             </ThemedText>
           </TouchableOpacity>
@@ -457,14 +460,14 @@ export default function LoginScreen() {
           <AnimatedButton 
             text="Log In" 
             onPress={handleLogin}
-            delay={400}
+            delay={200} /* faster animation */
           />
           
-          {/* Signup link */}
-          <View style={styles.switchAuthContainer}>
-            <ThemedText>Don't have an account? </ThemedText>
+          {/* Signup link - made more compact */}
+          <View style={[styles.switchAuthContainer, {marginTop: 5}]}>
+            <ThemedText style={{fontSize: 13}}>Don't have an account? </ThemedText>
             <TouchableOpacity onPress={handleGoToSignup}>
-              <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold' }}>
+              <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold', fontSize: 13 }}>
                 Sign Up
               </ThemedText>
             </TouchableOpacity>
@@ -535,18 +538,18 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   button: {
-    height: 56,
+    height: 45, // Reduced from 56
     width: '100%',
     backgroundColor: Colors.common.teal,
-    borderRadius: 12,
+    borderRadius: 10, // Reduced from 12
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 8, // Reduced from 24
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 2,
+    elevation: 2,
   },
   buttonText: {
     fontSize: 18,

@@ -330,14 +330,14 @@ export default function SignupScreen() {
           <AnimatedButton 
             text="Create Account" 
             onPress={handleSignup}
-            delay={500}
+            delay={250} /* faster animation */
           />
           
-          {/* Login link */}
-          <View style={styles.switchAuthContainer}>
-            <ThemedText>Already have an account? </ThemedText>
+          {/* Login link - moved higher and more compact */}
+          <View style={[styles.switchAuthContainer, {marginTop: 5}]}>
+            <ThemedText style={{fontSize: 13}}>Already have an account? </ThemedText>
             <TouchableOpacity onPress={handleGoToLogin}>
-              <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold' }}>
+              <ThemedText style={{ color: Colors.common.primary, fontWeight: 'bold', fontSize: 13 }}>
                 Log In
               </ThemedText>
             </TouchableOpacity>
