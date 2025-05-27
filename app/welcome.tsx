@@ -518,6 +518,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 24,
   },
+  backgroundContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    zIndex: -1,
+  },
   content: {
     flex: 1,
     justifyContent: 'center',
@@ -574,15 +580,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    color: '#333333', 
   },
   welcomeSubtitle: {
     fontSize: 18,
     textAlign: 'center',
-    opacity: 0.8,
+    color: '#555555', 
+    marginBottom: 24,
   },
   button: {
     paddingVertical: 16,

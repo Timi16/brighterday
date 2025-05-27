@@ -363,16 +363,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 20,
+    color: '#333333',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 17,
     textAlign: 'center',
-    opacity: 0.7,
-    maxWidth: '80%',
+    color: '#555555',
+    marginBottom: 30,
   },
   form: {
     width: '100%',

@@ -492,16 +492,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 12,
-    marginTop: 20,
+    marginBottom: 20,
+    color: '#333333', // Darker color for better contrast
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 17,
     textAlign: 'center',
-    opacity: 0.7,
+    color: '#555555', // Medium dark for better contrast
     maxWidth: '80%',
   },
   form: {
