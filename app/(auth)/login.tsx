@@ -441,10 +441,7 @@ export default function LoginScreen() {
           />
           
           {/* Forgot password link */}
-          <TouchableOpacity 
-            style={styles.forgotPasswordLink} 
-            onPress={handleGoToForgotPassword}
-          >
+          <TouchableOpacity style={styles.forgotPassword} onPress={handleGoToForgotPassword}>
             <ThemedText style={{ color: Colors.common.primary }}>
               Forgot your password?
             </ThemedText>
