@@ -134,12 +134,12 @@ const AnimatedInputField = ({
       <ThemedText style={{fontSize: 16, marginBottom: 8, color: '#333333', fontWeight: '500'}}>{label}</ThemedText>
       <TextInput
         style={{
-          height: 56,
+          height: 45,
           width: '100%',
-          borderRadius: 12,
-          paddingHorizontal: 16,
-          fontSize: 16,
-          marginBottom: 16,
+          borderRadius: 10,
+          paddingHorizontal: 12,
+          fontSize: 14,
+          marginBottom: 8,
           backgroundColor: '#f5f5f5',
           color: '#333333',
           borderWidth: 1,
@@ -308,7 +308,7 @@ export default function SignupScreen() {
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
-            delay={200}
+            delay={100}
           />
           
           <AnimatedInputField
@@ -317,7 +317,7 @@ export default function SignupScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
-            delay={300}
+            delay={150}
           />
           
           <AnimatedInputField
@@ -326,7 +326,7 @@ export default function SignupScreen() {
             secureTextEntry
             value={password}
             onChangeText={setPassword}
-            delay={400}
+            delay={200}
           />
           
           {/* Signup button */}
@@ -369,22 +369,22 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   header: {
-    marginBottom: 20, // Reduced from 40
+    marginBottom: 10, // Drastically reduced
     alignItems: 'center',
-    paddingTop: 10, // Added padding at top
+    paddingTop: 5, // Minimal padding
   },
   title: {
-    fontSize: 28, // Reduced from 30
+    fontSize: 24, // Smaller title
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10, // Reduced from 20
+    marginBottom: 5, // Minimal margin
     color: '#333333',
   },
   subtitle: {
-    fontSize: 16, // Reduced from 17
+    fontSize: 14, // Smaller subtitle
     textAlign: 'center',
     color: '#555555',
-    marginBottom: 20, // Reduced from 30
+    marginBottom: 10, // Minimal margin
   },
   form: {
     width: '100%',
