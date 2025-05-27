@@ -534,11 +534,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    width: '100%',
-    height: 50,
-    borderRadius: 10,
+    backgroundColor: '#f5f5f5',
+    height: 56,
+    borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+    marginBottom: 16,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   button: {
     height: 56,
