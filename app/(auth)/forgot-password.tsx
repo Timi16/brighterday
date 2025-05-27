@@ -25,6 +25,7 @@ import Animated, {
 
 import { ThemedText } from '../../components/ThemedText';
 import { ThemedView } from '../../components/ThemedView';
+import { CleanHeader } from '../../components/CleanHeader';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
 
@@ -391,17 +392,18 @@ export default function ForgotPasswordScreen() {
   
   
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: '#FFFFFF' }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
-    >
-      {/* Back button */}
+    <CleanHeader backgroundColor="#FFFFFF">
+      <KeyboardAvoidingView
+        style={[styles.container, { backgroundColor: '#FFFFFF' }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
+      >
+      {/* Custom back button with no (auth) text */}
       <TouchableOpacity 
         style={[styles.backButton, { marginTop: insets.top || 20 }]}
-        onPress={() => router.back()}
+        onPress={() => router.replace('/(auth)/login')}
       >
-        <ThemedText style={{ color: Colors.common.teal, fontWeight: '500' }}>← Back</ThemedText>
+        <ThemedText style={{ color: Colors.common.teal, fontWeight: '500', fontSize: 16 }}>Back</ThemedText>
       </TouchableOpacity>
       
       {/* Decorative shapes */}
@@ -491,6 +493,7 @@ export default function ForgotPasswordScreen() {
         )}
       </ScrollView>
     </KeyboardAvoidingView>
+    </CleanHeader>
   );
 }
 

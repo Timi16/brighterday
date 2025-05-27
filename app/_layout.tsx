@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
@@ -48,6 +48,8 @@ export default function RootLayout() {
               fontWeight: '600',
             },
             headerShadowVisible: false,
+            // Hide segment names in headers - completely replace with null to avoid any text rendering issues
+            headerTitle: () => null
           }}
         >
           <Stack.Screen name="welcome" options={{ headerShown: false }} />

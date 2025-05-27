@@ -17,15 +17,16 @@ import Animated, {
   withTiming, 
   withSequence,
   withDelay,
+  withRepeat,
   Easing,
   FadeIn,
   FadeInDown
 } from 'react-native-reanimated';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemedText } from '../components/ThemedText';
+import { ThemedView } from '../components/ThemedView';
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '../hooks/useColorScheme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -240,7 +241,7 @@ export default function LearnMoreScreen() {
   
   // Handle get started press
   const handleGetStarted = () => {
-    router.push('/auth/signup');
+    router.push('/(auth)/signup');
   };
   
   return (
