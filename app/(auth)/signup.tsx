@@ -407,18 +407,17 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   button: {
-    height: 56,
+    height: 45, // Reduced from 56
     width: '100%',
-    backgroundColor: Colors.common.teal,
-    borderRadius: 12,
+    borderRadius: 10, // Reduced from 12
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 8, // Reduced from 24
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 2,
+    elevation: 2,
   },
   buttonText: {
     fontSize: 18,
