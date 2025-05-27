@@ -7,13 +7,8 @@ export default function AuthLayout() {
   return (
     <Stack 
       screenOptions={{
-        headerTitle: '',
-        headerStyle: { 
-          backgroundColor: Colors.light.background 
-        },
-        headerShadowVisible: false,
-        headerShown: false, 
-        animation: 'fade'
+        headerShown: false,
+        animation: 'slide_from_right'
       }} 
     >
       <Stack.Screen name="login" />
