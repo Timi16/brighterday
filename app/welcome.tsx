@@ -420,7 +420,94 @@ const WelcomeTextAnimated = () => {
   );
 };
 
-// ... (rest of the code remains the same)
+export default function WelcomeScreen() {
+  const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+  
+  // Handle get started press
+  const handleGetStarted = () => {
+    router.push({ pathname: '/(auth)/signup' });
+  };
+  
+  // Handle learn more press
+  const handleLearnMore = () => {
+    router.push({ pathname: '/learn-more' });
+  };
+
+  // Button animation
+  const Button = ({ onPress, text, delay = 0 }: { onPress: () => void, text: string, delay?: number }) => {
+    const opacity = useSharedValue(0);
+    const translateY = useSharedValue(30);
+    
+    useEffect(() => {
+      opacity.value = withDelay(1500 + delay, withTiming(1, { duration: 800 }));
+      translateY.value = withDelay(1500 + delay, withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) }));
+    }, []);
+    
+    const buttonStyle = useAnimatedStyle(() => {
+      return {
+        opacity: opacity.value,
+        transform: [{ translateY: translateY.value }],
+      };
+    });
+    
+    return (
+      <Animated.View style={buttonStyle}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            { backgroundColor: Colors.common.teal }
+          ]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            onPress();
+          }}
+          activeOpacity={0.8}
+        >
+          <ThemedText style={styles.buttonText}>{text}</ThemedText>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={[styles.container]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
+    >
+      <ScrollView 
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          {/* Sunny animation */}
+          <SunnyAnimated />
+          
+          {/* Welcome text */}
+          <WelcomeTextAnimated />
+          
+          {/* Get started button */}
+          <Button 
+            text="Get Started" 
+            onPress={handleGetStarted}
+          />
+          
+          {/* Learn more button */}
+          <Button 
+            text="Learn About Brighter Days" 
+            onPress={handleLearnMore} 
+            delay={200}
+          />
+        </View>
+      </ScrollView>
+      <PlayfulBackground />
+    </KeyboardAvoidingView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -436,7 +523,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    gap: 24,
     gap: 32,
   },
   sunnyContainer: {
