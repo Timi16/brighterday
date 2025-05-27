@@ -169,30 +169,27 @@ const AnimatedButton = ({
   primary?: boolean,
   delay?: number 
 }) => {
-  const colorScheme = useColorScheme();
-  const scale = useSharedValue(0.95);
+  const translateY = useSharedValue(20);
   const opacity = useSharedValue(0);
   
   useEffect(() => {
-    opacity.value = withDelay(delay, withTiming(1, { duration: 400 }));
-    scale.value = withDelay(delay, withTiming(1, { duration: 400, easing: Easing.out(Easing.back(1.5)) }));
+    opacity.value = withDelay(delay, withTiming(1, { duration: 300 }));
+    translateY.value = withDelay(delay, withTiming(0, { duration: 300, easing: Easing.out(Easing.cubic) }));
   }, []);
   
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      transform: [{ scale: scale.value }]
+      transform: [{ translateY: translateY.value }]
     };
   });
   
   return (
-    <Animated.View style={animatedStyle}>
-      <TouchableOpacity
+    <Animated.View style={[animatedStyle, { width: '100%', marginTop: 5 }]}>
+      <TouchableOpacity 
         style={[
           styles.button,
-          primary 
-            ? { backgroundColor: Colors.common.teal } 
-            : { backgroundColor: 'transparent', borderWidth: 1, borderColor: Colors.common.teal }
+          primary ? { backgroundColor: Colors.common.primary } : { backgroundColor: 'transparent', borderWidth: 1, borderColor: Colors.common.teal }
         ]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
