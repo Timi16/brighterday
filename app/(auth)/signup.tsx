@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
-    gap: 20,
+    gap: 10, // Reduced gap to fit everything
   },
   inputContainer: {
     width: '100%',
