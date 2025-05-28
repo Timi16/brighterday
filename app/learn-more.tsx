@@ -246,12 +246,15 @@ export default function LearnMoreScreen() {
   
   return (
     <ThemedView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
-      {/* Back button */}
+      {/* Back button - improved styling */}
       <TouchableOpacity 
         style={[styles.backButton, { marginTop: insets.top || 20 }]}
-        onPress={handleBack}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          handleBack();
+        }}
       >
-        <ThemedText>← Back</ThemedText>
+        <ThemedText style={styles.backButtonText}>← Back</ThemedText>
       </TouchableOpacity>
       
       <ScrollView
@@ -263,22 +266,24 @@ export default function LearnMoreScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header - Enhanced with better contrast and styling */}
         <Animated.View 
           entering={FadeIn.delay(200).duration(800)}
           style={styles.header}
         >
-          <SunnyAnimation size={100} expression="excited" />
+          <View style={styles.logoContainer}>
+            <SunnyAnimation size={100} expression="excited" />
+          </View>
           <ThemedText type="title" style={styles.title}>About Brighter Days</ThemedText>
           <ThemedText style={styles.subtitle}>
             A supportive companion for parents of children with autism
           </ThemedText>
         </Animated.View>
         
-        {/* Mission statement */}
+        {/* Mission statement - solid background for better visibility */}
         <Animated.View 
           entering={FadeIn.delay(400).duration(800)}
-          style={[styles.missionContainer, { backgroundColor: Colors.common.transparentPrimary }]}
+          style={[styles.missionContainer, { backgroundColor: '#E4F7FF', borderWidth: 1, borderColor: '#BEE6F8' }]}
         >
           <ThemedText type="subtitle" style={styles.missionTitle}>Our Mission</ThemedText>
           <ThemedText style={styles.missionText}>
@@ -324,10 +329,10 @@ export default function LearnMoreScreen() {
           />
         </View>
         
-        {/* Testimonial */}
+        {/* Testimonial - solid background for better visibility */}
         <Animated.View 
           entering={FadeIn.delay(1000).duration(800)}
-          style={[styles.testimonialContainer, { backgroundColor: Colors.common.transparentAccent }]}
+          style={[styles.testimonialContainer, { backgroundColor: '#FFF2D9', borderWidth: 1, borderColor: '#FFD88D' }]}
         >
           <ThemedText style={styles.testimonialQuote}>
             "Brighter Days has been a game-changer for our family. The strategies suggested by Sunny helped us transform our morning routine from chaos to calm."
@@ -343,12 +348,12 @@ export default function LearnMoreScreen() {
           style={styles.buttonContainer}
         >
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: Colors.common.teal }]}
+            style={[styles.button, { backgroundColor: '#00A3E0' }]}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               handleGetStarted();
             }}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <ThemedText style={styles.buttonText}>Get Started Now</ThemedText>
           </TouchableOpacity>
@@ -374,10 +379,35 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
     padding: 8,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  backButtonText: {
+    fontWeight: '500',
+    color: '#0078A7',
   },
   header: {
     alignItems: 'center',
     marginBottom: 32,
+  },
+  logoContainer: {
+    backgroundColor: '#FFECB3',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 16,
   },
   title: {
     fontSize: 28,
@@ -389,7 +419,8 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    opacity: 0.7,
+    color: '#333333', // Dark color for better contrast instead of opacity
+    fontWeight: '500',
     maxWidth: '90%',
   },
   missionContainer: {
@@ -399,12 +430,15 @@ const styles = StyleSheet.create({
   },
   missionTitle: {
     marginBottom: 8,
-    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0078A7',
   },
   missionText: {
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
+    lineHeight: 22,
+    fontSize: 15,
+    color: '#333333',
+    fontWeight: '500',
   },
   sectionTitle: {
     marginBottom: 16,
@@ -415,12 +449,15 @@ const styles = StyleSheet.create({
   featureItem: {
     flexDirection: 'row',
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: '#BEE6F8',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
     elevation: 2,
   },
   iconContainer: {
@@ -438,43 +475,67 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   featureTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 4,
+    color: '#0078A7',
   },
   featureDescription: {
     fontSize: 14,
+    color: '#333333',
     lineHeight: 20,
-    opacity: 0.8,
+    fontWeight: '500',
   },
   testimonialContainer: {
     padding: 20,
-    borderRadius: 16,
+    borderRadius: 12,
     marginTop: 32,
-    marginBottom: 16,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   testimonialQuote: {
-    fontSize: 16,
-    lineHeight: 24,
     fontStyle: 'italic',
+    lineHeight: 22,
     marginBottom: 12,
+    color: '#333333',
+    fontSize: 15,
+    fontWeight: '500',
   },
   testimonialAuthor: {
+    fontWeight: 'bold',
     textAlign: 'right',
-    fontWeight: '600',
+    color: '#0078A7',
   },
   buttonContainer: {
     marginTop: 24,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 4,
   },
   button: {
-    height: 56,
-    borderRadius: 28,
+    height: 54,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   sunnyContainer: {
     justifyContent: 'center',

@@ -131,14 +131,14 @@ const AnimatedInputField = ({
   
   return (
     <Animated.View style={[styles.inputContainer, animatedStyle]}>
-      <ThemedText style={{fontSize: 16, marginBottom: 8, color: '#333333', fontWeight: '500'}}>{label}</ThemedText>
+      <ThemedText style={{fontSize: 15, marginBottom: 6, color: '#333333', fontWeight: '600'}}>{label}</ThemedText>
       <TextInput
         style={{
-          height: 45,
+          height: 48,
           width: '100%',
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          fontSize: 14,
+          borderRadius: 8,
+          paddingHorizontal: 16,
+          fontSize: 15,
           marginBottom: 8,
           backgroundColor: '#f5f5f5',
           color: '#333333',
@@ -254,12 +254,15 @@ export default function SignupScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
       >
-      {/* Custom back button with no (auth) text */}
+      {/* Custom back button with better styling */}
       <TouchableOpacity 
         style={[styles.backButton, { marginTop: insets.top || 20 }]}
-        onPress={() => router.replace('/welcome')}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          router.replace('/welcome');
+        }}
       >
-        <ThemedText style={{ color: Colors.common.teal, fontWeight: '500', fontSize: 16 }}>Back</ThemedText>
+        <ThemedText style={styles.backButtonText}>Back</ThemedText>
       </TouchableOpacity>
       
       {/* Decorative shapes */}
@@ -289,7 +292,7 @@ export default function SignupScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header - improved structure */}
         <Animated.View style={[styles.header, headerStyle]}>
           <ThemedText type="title" style={styles.title}>Create Account</ThemedText>
           <ThemedText style={styles.subtitle}>
@@ -364,28 +367,41 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
     padding: 8,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  backButtonText: {
+    color: '#0078A7',
+    fontWeight: '500',
+    fontSize: 16,
   },
   header: {
-    marginBottom: 10, // Drastically reduced
-    alignItems: 'center',
-    paddingTop: 5, // Minimal padding
+    marginBottom: 15,
+    alignItems: 'flex-start', // Left-aligned for better structure
+    paddingTop: 10,
+    width: '100%',
   },
   title: {
-    fontSize: 24, // Smaller title
+    fontSize: 26,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 5, // Minimal margin
+    marginBottom: 8,
     color: '#333333',
   },
   subtitle: {
-    fontSize: 14, // Smaller subtitle
-    textAlign: 'center',
+    fontSize: 15,
     color: '#555555',
-    marginBottom: 10, // Minimal margin
+    marginBottom: 16,
+    lineHeight: 20,
   },
   form: {
     width: '100%',
-    gap: 10, // Reduced gap to fit everything
+    gap: 14, // Slightly more spacing for better structure
+    marginTop: 5,
   },
   inputContainer: {
     width: '100%',
@@ -407,17 +423,18 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   button: {
-    height: 45, // Reduced from 56
+    height: 52,
     width: '100%',
-    borderRadius: 10, // Reduced from 12
+    backgroundColor: '#00A3E0', // Brighter blue for better visibility
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8, // Reduced from 24
+    marginTop: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
   buttonText: {
     fontSize: 18,
