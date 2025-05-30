@@ -29,6 +29,15 @@ const SunnyLogo = () => {
     <View style={styles.logoContainer}>
       {/* Sun icon */}
       <View style={styles.sunIcon}>
+        {/* Sun face */}
+        <View style={styles.sunFace}>
+          <View style={styles.eyesContainer}>
+            <View style={styles.eye} />
+            <View style={styles.eye} />
+          </View>
+          <View style={styles.mouth} />
+        </View>
+        
         {/* Sun rays */}
         {Array(12).fill(0).map((_, i) => (
           <View 
@@ -79,6 +88,7 @@ export default function WelcomeScreen() {
           source={require('../assets/images/sun-pattern.png')}
           style={styles.patternImage}
           contentFit="cover"
+          cachePolicy="memory"
         />
       </View>
       
@@ -140,13 +150,13 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: '#FFF9F0', // Warm white background like in Image 3
   },
   backgroundPattern: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    opacity: 0.2,
+    opacity: 0.15, // Lighter pattern
     zIndex: -1,
   },
   patternImage: {
@@ -168,29 +178,54 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sunIcon: {
-    width: 60,
-    height: 60,
-    backgroundColor: Colors.common.accent,
-    borderRadius: 30,
+    width: 80,
+    height: 80,
+    backgroundColor: '#FFDB58', // More yellow color for Sunny
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   sunRay: {
     position: 'absolute',
     width: 4,
-    height: 16,
-    backgroundColor: Colors.common.accent,
+    height: 20,
+    backgroundColor: '#FFDB58', // Match sun color
     borderRadius: 2,
-    top: -8,
-    left: 28,
+    top: -10,
+    left: 38,
+  },
+  sunFace: {
+    width: '60%',
+    height: '60%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eyesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '60%',
+    marginBottom: 8,
+  },
+  eye: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#8B4513', // Brown eyes
+  },
+  mouth: {
+    width: 16,
+    height: 2,
+    backgroundColor: '#8B4513', // Brown mouth
+    borderRadius: 1,
   },
   logoText: {
     fontSize: 32,
     textAlign: 'center',
     fontWeight: 'bold',
     lineHeight: 36,
+    width: '100%',
   },
   brightText: {
     color: Colors.common.primary,
@@ -208,12 +243,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     color: '#333333',
+    width: '100%',
   },
   welcomeSubtitle: {
     fontSize: 18,
     textAlign: 'center',
     color: '#555555',
     paddingHorizontal: 20,
+    width: '100%',
   },
   buttonContainer: {
     gap: 16,
