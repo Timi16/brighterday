@@ -1,13 +1,11 @@
 import { Image } from 'expo-image';
 import React, { useState, useRef } from 'react';
-import { Platform, StyleSheet, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, FlatList, View } from 'react-native';
+import { Platform, StyleSheet, TextInput, Text, TouchableOpacity, KeyboardAvoidingView, FlatList, View, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAppState } from '@/hooks/useAppState';
 
 // Message type definition
@@ -34,12 +32,10 @@ const initialSuggestions: Suggestion[] = [
 
 // Sunny's avatar component
 const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
-  const colorScheme = useColorScheme();
-  
   return (
     <View style={[styles.sunnyAvatar, { width: size, height: size }]}>
       <View style={{
-        backgroundColor: Colors.common.accent,
+        backgroundColor: '#FFDB58', // Sunny yellow color
         width: size,
         height: size,
         borderRadius: size / 2,
@@ -54,7 +50,7 @@ const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
             style={[
               styles.sunRay, 
               { 
-                backgroundColor: Colors.common.accent,
+                backgroundColor: '#FFDB58', // Match sun color
                 transform: [{ rotate: `${i * 45}deg` }],
                 width: size * 0.08,
                 height: size * 0.2,
@@ -74,13 +70,13 @@ const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
             <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
           </View>
           
-          {/* Smile */}
+          {/* Neutral mouth */}
           <View style={[
             styles.smile, 
             { 
               width: size * 0.4, 
-              height: size * 0.2, 
-              borderBottomWidth: Math.max(2, size * 0.03)
+              height: size * 0.1, 
+              borderBottomWidth: Math.max(1.5, size * 0.02)
             }
           ]} />
         </View>
@@ -91,7 +87,6 @@ const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
 
 // Message bubble component
 const MessageBubble = ({ message }: { message: Message }) => {
-  const colorScheme = useColorScheme();
   const isUser = message.sender === 'user';
   
   return (
@@ -103,14 +98,13 @@ const MessageBubble = ({ message }: { message: Message }) => {
       <View style={[
         styles.messageBubble,
         isUser ? styles.userMessage : styles.botMessage,
-        { backgroundColor: isUser ? Colors.common.primary : Colors[colorScheme || 'light'].cardBackground }
       ]}>
-        <ThemedText style={[
+        <Text style={[
           styles.messageText,
-          isUser && { color: 'white' }
+          isUser ? styles.userMessageText : styles.botMessageText
         ]}>
           {message.text}
-        </ThemedText>
+        </Text>
       </View>
     </View>
   );
@@ -118,24 +112,18 @@ const MessageBubble = ({ message }: { message: Message }) => {
 
 // Suggestion button component
 const SuggestionButton = ({ suggestion, onPress }: { suggestion: Suggestion, onPress: () => void }) => {
-  const colorScheme = useColorScheme();
-  
   return (
     <TouchableOpacity
-      style={[
-        styles.suggestionButton,
-        { backgroundColor: colorScheme === 'dark' ? Colors.dark.cardBackground : Colors.light.cardBackground }
-      ]}
+      style={styles.suggestionButton}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <ThemedText style={styles.suggestionText}>{suggestion.text}</ThemedText>
+      <Text style={styles.suggestionText}>{suggestion.text}</Text>
     </TouchableOpacity>
   );
 };
 
 export default function ChatScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { state } = useAppState();
   
@@ -250,256 +238,236 @@ export default function ChatScreen() {
   const renderMessageItem = ({ item }: { item: Message }) => (
     <MessageBubble message={item} />
   );
-  
+
   return (
-    <ThemedView style={styles.container}>
-      <View style={[
-        styles.header,
-        { 
-          paddingTop: insets.top || 20,
-          borderBottomColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-        }
-      ]}>
-        <View style={styles.headerContent}>
-          <SunnyAvatar size={36} />
-          <ThemedText style={styles.headerTitle}>Chat with Sunny</ThemedText>
-        </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+          cachePolicy="memory"
+        />
       </View>
-      
-      <FlatList
-        ref={listRef}
-        data={messages}
-        renderItem={renderMessageItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={[
-          styles.messagesList,
-          { paddingBottom: 100 }
-        ]}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-      />
-      
-      <View style={[
-        styles.disclaimerContainer,
-        { backgroundColor: colorScheme === 'dark' ? 'rgba(30,30,30,0.9)' : 'rgba(255,255,255,0.9)' }
-      ]}>
-        <ThemedText style={styles.disclaimerText}>
-          Sunny is not a licensed provider. For clinical advice, please consult a professional.
-        </ThemedText>
-      </View>
-      
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={100}
-        style={[
-          styles.inputContainer,
-          { 
-            paddingBottom: insets.bottom || 20,
-            backgroundColor: colorScheme === 'dark' ? 'rgba(30,30,30,0.95)' : 'rgba(255,255,255,0.95)',
-            borderTopColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-          }
-        ]}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.suggestionsContainer}
-        >
-          {suggestions.map(suggestion => (
-            <SuggestionButton
-              key={suggestion.id}
-              suggestion={suggestion}
-              onPress={() => handleSuggestionPress(suggestion)}
-            />
-          ))}
-        </ScrollView>
-        
-        <View style={styles.inputRow}>
-          <TextInput
-            style={[
-              styles.input,
-              { 
-                backgroundColor: colorScheme === 'dark' ? Colors.dark.cardBackground : Colors.light.cardBackground,
-                borderColor: colorScheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                color: colorScheme === 'dark' ? 'white' : 'black'
-              }
-            ]}
-            value={input}
-            onChangeText={setInput}
-            placeholder="Ask Sunny..."
-            placeholderTextColor={colorScheme === 'dark' ? '#999' : '#777'}
-            multiline
+        <View style={{ flex: 1, paddingTop: insets.top + 10, paddingBottom: insets.bottom }}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Chat with Sunny</Text>
+          </View>
+
+          <FlatList
+            ref={listRef}
+            data={messages}
+            renderItem={renderMessageItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.messageList}
+            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              { 
-                backgroundColor: Colors.common.primary,
-                opacity: input.trim() ? 1 : 0.6
-              }
-            ]}
-            onPress={() => handleSendMessage(input)}
-            disabled={!input.trim()}
-            activeOpacity={0.8}
-          >
-            <ThemedText style={styles.sendButtonText}>→</ThemedText>
-          </TouchableOpacity>
+
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ask Sunny..."
+                placeholderTextColor="#999"
+                value={input}
+                onChangeText={setInput}
+                multiline
+                maxLength={500}
+                onSubmitEditing={() => handleSendMessage(input)}
+                blurOnSubmit={false}
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  !input.trim() && styles.sendButtonDisabled,
+                ]}
+                onPress={() => handleSendMessage(input)}
+                disabled={!input.trim()}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="send" size={22} color={input.trim() ? Colors.common.teal : '#ccc'} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.suggestionsContainer}>
+            {suggestions.map((suggestion) => (
+              <SuggestionButton
+                key={suggestion.id}
+                suggestion={suggestion}
+                onPress={() => handleSuggestionPress(suggestion)}
+              />
+            ))}
+          </View>
         </View>
       </KeyboardAvoidingView>
-    </ThemedView>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF9F0', // Warm white background like in Image 3
   },
-  header: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.15,
+    zIndex: -1,
   },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   sunnyAvatar: {
+    marginRight: 5,
+  },
+  sunFace: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 10,
+  },
+  eyesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '50%',
+    marginBottom: 5,
+  },
+  eye: {
+    backgroundColor: '#8B4513', // Brown eyes
+    borderRadius: 4,
+  },
+  smile: {
+    borderBottomColor: '#8B4513', // Brown smile
+    borderRadius: 10,
   },
   sunRay: {
     position: 'absolute',
   },
-  sunFace: {
-    width: '70%',
-    height: '70%',
-    justifyContent: 'center',
-    alignItems: 'center',
+  suggestionButton: {
+    margin: 5,
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
-  eyesContainer: {
+  suggestionText: {
+    fontSize: 14,
+    color: '#555555',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    marginBottom: 10,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '70%',
-    marginBottom: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  eye: {
-    borderRadius: 10,
-    backgroundColor: '#8B4513',
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#333333',
   },
-  smile: {
-    borderBottomColor: '#8B4513',
-    borderRadius: 10,
-  },
-  messagesList: {
-    padding: 16,
+  messageList: {
+    flex: 1,
+    padding: 10,
   },
   messageBubbleContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
-    maxWidth: '80%',
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    maxWidth: '85%',
   },
   userMessageContainer: {
     alignSelf: 'flex-end',
+    justifyContent: 'flex-end',
   },
   botMessageContainer: {
     alignSelf: 'flex-start',
+    justifyContent: 'flex-start',
   },
   messageBubble: {
+    padding: 14,
     borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     maxWidth: '100%',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   userMessage: {
     borderBottomRightRadius: 4,
+    marginLeft: 10,
+    backgroundColor: Colors.common.teal,
   },
   botMessage: {
-    marginLeft: 8,
     borderBottomLeftRadius: 4,
+    marginRight: 10,
+    marginLeft: 10,
+    backgroundColor: 'white',
   },
   messageText: {
     fontSize: 16,
     lineHeight: 22,
   },
+  userMessageText: {
+    color: 'white',
+  },
+  botMessageText: {
+    color: '#333333',
+  },
   inputContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderTopWidth: 1,
-    paddingTop: 8,
-    paddingHorizontal: 16,
+    padding: 10,
+    paddingBottom: 20,
   },
-  suggestionsContainer: {
-    paddingBottom: 12,
-  },
-  suggestionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 1,
-  },
-  suggestionText: {
-    fontSize: 14,
-  },
-  inputRow: {
+  inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 8,
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   input: {
     flex: 1,
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingRight: 50,
+    padding: 12,
     fontSize: 16,
     maxHeight: 120,
-    borderWidth: 1,
-    minHeight: 50,
+    color: '#333333',
   },
   sendButton: {
-    position: 'absolute',
-    right: 5,
-    bottom: 5,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sendButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+  sendButtonDisabled: {
+    opacity: 0.5,
   },
-  disclaimerContainer: {
-    position: 'absolute',
-    bottom: 90,
-    left: 0,
-    right: 0,
+  suggestionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 10,
+    justifyContent: 'center',
     paddingVertical: 6,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
