@@ -1,509 +1,139 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { 
   StyleSheet, 
   View, 
-  TextInput, 
+  Text,
   TouchableOpacity, 
-  Platform,
-  ScrollView,
+  SafeAreaView,
   Dimensions,
-  Alert
+  StatusBar,
+  Platform
 } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withRepeat, 
-  withSequence,
-  Easing,
-  interpolate,
-  withDelay
+  FadeIn,
+  FadeInDown
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Screen dimensions
 const { width, height } = Dimensions.get('window');
 
-// Sunny animated component
-const SunnyAnimated = () => {
-  const colorScheme = useColorScheme();
-  const rotation = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0);
-  
-  useEffect(() => {
-    // Fade in
-    opacity.value = withTiming(1, { duration: 1000 });
-    
-    // Gentle rotation animation
-    rotation.value = withRepeat(
-      withSequence(
-        withTiming(-0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0.05, { duration: 2000, easing: Easing.inOut(Easing.sin) })
-      ),
-      -1, // Infinite repeat
-      true // Reverse
-    );
-    
-    // Gentle pulsing animation
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0.95, { duration: 2000, easing: Easing.inOut(Easing.sin) })
-      ),
-      -1, // Infinite repeat
-      true // Reverse
-    );
-  }, []);
-  
-  const sunnyStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { rotate: `${rotation.value * Math.PI}rad` },
-        { scale: scale.value }
-      ],
-      opacity: opacity.value,
-    };
-  });
-  
+// Sunny Logo component
+const SunnyLogo = () => {
   return (
-    <Animated.View style={[styles.sunnyContainer, sunnyStyle]}>
-      <View style={[styles.sunCircle, { backgroundColor: Colors.common.accent }]}>
+    <View style={styles.logoContainer}>
+      {/* Sun icon */}
+      <View style={styles.sunIcon}>
         {/* Sun rays */}
         {Array(12).fill(0).map((_, i) => (
           <View 
             key={`ray-${i}`} 
             style={[
               styles.sunRay, 
-              { 
-                backgroundColor: Colors.common.accent,
-                transform: [{ rotate: `${i * 30}deg` }]
-              }
+              { transform: [{ rotate: `${i * 30}deg` }] }
             ]} 
           />
         ))}
-        
-        {/* Sun face */}
-        <View style={styles.sunFace}>
-          {/* Eyes */}
-          <View style={styles.eyesContainer}>
-            <View style={styles.eye} />
-            <View style={styles.eye} />
-          </View>
-          
-          {/* Smile */}
-          <View style={styles.smile} />
-        </View>
       </View>
-    </Animated.View>
-  );
-};
-
-// Playful background elements
-const PlayfulBackground = () => {
-  const colorScheme = useColorScheme();
-  
-  // Create different playful shapes
-  const shapes = [
-    // Circles
-    ...Array(5).fill(0).map((_, i) => ({
-      id: `circle-${i}`,
-      type: 'circle',
-      size: Math.random() * 50 + 20,
-      x: Math.random() * width,
-      y: Math.random() * height,
-      delay: i * 300,
-      color: i % 3 === 0 ? Colors.common.primary : 
-             i % 3 === 1 ? Colors.common.accent : 
-             Colors.common.teal,
-      opacity: 0.12 + (Math.random() * 0.08)
-    })),
-    
-    // Stars
-    ...Array(4).fill(0).map((_, i) => ({
-      id: `star-${i}`,
-      type: 'star',
-      size: Math.random() * 30 + 15,
-      x: Math.random() * width,
-      y: Math.random() * height,
-      delay: i * 400 + 200,
-      color: i % 2 === 0 ? Colors.common.accent : Colors.common.teal,
-      opacity: 0.15 + (Math.random() * 0.1)
-    })),
-    
-    // Clouds
-    ...Array(3).fill(0).map((_, i) => ({
-      id: `cloud-${i}`,
-      type: 'cloud',
-      size: Math.random() * 60 + 40,
-      x: Math.random() * width,
-      y: Math.random() * (height / 2),
-      delay: i * 500 + 100,
-      color: '#FFFFFF',
-      opacity: 0.2 + (Math.random() * 0.1)
-    })),
-  ];
-  
-  // Render a star shape
-  const renderStar = (size: number) => (
-    <View style={{
-      width: size,
-      height: size,
-      position: 'relative',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}>
-      <View style={{
-        width: size,
-        height: size * 0.4,
-        backgroundColor: 'currentColor',
-        borderRadius: size / 10,
-        position: 'absolute',
-        transform: [{ rotate: '0deg' }]
-      }} />
-      <View style={{
-        width: size,
-        height: size * 0.4,
-        backgroundColor: 'currentColor',
-        borderRadius: size / 10,
-        position: 'absolute',
-        transform: [{ rotate: '72deg' }]
-      }} />
-      <View style={{
-        width: size,
-        height: size * 0.4,
-        backgroundColor: 'currentColor',
-        borderRadius: size / 10,
-        position: 'absolute',
-        transform: [{ rotate: '144deg' }]
-      }} />
-      <View style={{
-        width: size,
-        height: size * 0.4,
-        backgroundColor: 'currentColor',
-        borderRadius: size / 10,
-        position: 'absolute',
-        transform: [{ rotate: '-72deg' }]
-      }} />
-      <View style={{
-        width: size,
-        height: size * 0.4,
-        backgroundColor: 'currentColor',
-        borderRadius: size / 10,
-        position: 'absolute',
-        transform: [{ rotate: '-144deg' }]
-      }} />
+      
+      {/* Logo text */}
+      <Text style={styles.logoText}>
+        <Text style={styles.brightText}>BRIGHTER</Text>{"\n"}
+        <Text style={styles.daysText}>DAYS</Text>
+      </Text>
     </View>
-  );
-  
-  // Render a cloud shape
-  const renderCloud = (size: number) => (
-    <View style={{
-      width: size * 1.8,
-      height: size,
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}>
-      <View style={{
-        width: size * 0.6,
-        height: size * 0.6,
-        borderRadius: size,
-        backgroundColor: 'currentColor',
-        position: 'absolute',
-        left: size * 0.2,
-      }} />
-      <View style={{
-        width: size * 0.8,
-        height: size * 0.8,
-        borderRadius: size,
-        backgroundColor: 'currentColor',
-        position: 'absolute',
-        left: size * 0.6,
-      }} />
-      <View style={{
-        width: size * 0.7,
-        height: size * 0.7,
-        borderRadius: size,
-        backgroundColor: 'currentColor',
-        position: 'absolute',
-        left: size * 1,
-      }} />
-      <View style={{
-        width: size * 1.6,
-        height: size * 0.5,
-        borderRadius: size,
-        backgroundColor: 'currentColor',
-        position: 'absolute',
-        bottom: size * 0.15,
-      }} />
-    </View>
-  );
-  
-  return (
-    <View style={styles.backgroundContainer}>
-      {shapes.map((shape) => {
-        const translateX = useSharedValue(0);
-        const translateY = useSharedValue(0);
-        const opacity = useSharedValue(0);
-        const scale = useSharedValue(0.5);
-        const rotate = useSharedValue(0);
-        
-        useEffect(() => {
-          // Start animations after delay
-          opacity.value = withDelay(
-            shape.delay,
-            withTiming(shape.opacity, { duration: 1000 })
-          );
-          
-          scale.value = withDelay(
-            shape.delay,
-            withTiming(1, { duration: 1000 })
-          );
-          
-          // Different movement for different shapes
-          if (shape.type === 'circle') {
-            // Gentle floating animation
-            translateY.value = withDelay(
-              shape.delay,
-              withRepeat(
-                withSequence(
-                  withTiming(-15, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
-                  withTiming(15, { duration: 3000, easing: Easing.inOut(Easing.sin) })
-                ),
-                -1,
-                true
-              )
-            );
-            
-            // Slight rotation
-            rotate.value = withDelay(
-              shape.delay,
-              withRepeat(
-                withTiming(Math.PI * 2, { duration: 20000, easing: Easing.linear }),
-                -1,
-                false
-              )
-            );
-          } else if (shape.type === 'star') {
-            // Gentle twinkling
-            scale.value = withDelay(
-              shape.delay,
-              withRepeat(
-                withSequence(
-                  withTiming(1, { duration: 1000 }),
-                  withTiming(0.85, { duration: 1000 }),
-                  withTiming(1.1, { duration: 800 }),
-                  withTiming(0.9, { duration: 1200 }),
-                  withTiming(1, { duration: 1000 })
-                ),
-                -1,
-                false
-              )
-            );
-            
-            // Slow rotation
-            rotate.value = withDelay(
-              shape.delay,
-              withRepeat(
-                withTiming(Math.PI / 6, { duration: 10000, easing: Easing.inOut(Easing.sin) }),
-                -1,
-                true
-              )
-            );
-          } else if (shape.type === 'cloud') {
-            // Slow horizontal movement
-            translateX.value = withDelay(
-              shape.delay,
-              withRepeat(
-                withSequence(
-                  withTiming(width / 2, { duration: 40000, easing: Easing.linear }),
-                  withTiming(-width / 2, { duration: 0 }) // Reset position
-                ),
-                -1,
-                false
-              )
-            );
-          }
-        }, []);
-        
-        const shapeStyle = useAnimatedStyle(() => {
-          return {
-            position: 'absolute',
-            left: shape.x + translateX.value,
-            top: shape.y + translateY.value,
-            opacity: opacity.value,
-            transform: [
-              { scale: scale.value },
-              { rotate: `${rotate.value}rad` }
-            ],
-          };
-        });
-        
-        return (
-          <Animated.View 
-            key={shape.id} 
-            style={[shapeStyle, { zIndex: -1 }]}
-          >
-            <View style={{}}>
-              {shape.type === 'circle' && (
-                <View 
-                  style={{
-                    width: shape.size,
-                    height: shape.size,
-                    borderRadius: shape.size / 2,
-                    backgroundColor: 'currentColor',
-                  }}
-                />
-              )}
-              {shape.type === 'star' && renderStar(shape.size)}
-              {shape.type === 'cloud' && renderCloud(shape.size)}
-            </View>
-          </Animated.View>
-        );
-      })}
-    </View>
-  );
-};
-
-// Welcome text animation
-const WelcomeTextAnimated = () => {
-  const headerOpacity = useSharedValue(0);
-  const headerTranslateY = useSharedValue(-20);
-  const headerScale = useSharedValue(0.8);
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
-  
-  useEffect(() => {
-    headerOpacity.value = withTiming(1, { duration: 800 });
-    headerTranslateY.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) });
-    headerScale.value = withTiming(1, { duration: 800, easing: Easing.out(Easing.cubic) });
-    opacity.value = withDelay(1000, withTiming(1, { duration: 800 }));
-    translateY.value = withDelay(1000, withTiming(0, { duration: 800 }));
-  }, []);
-  
-  const headerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: headerOpacity.value,
-      transform: [
-        { translateY: headerTranslateY.value },
-        { scale: headerScale.value }
-      ]
-    };
-  });
-  
-  const textStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      transform: [{ translateY: translateY.value }],
-    };
-  });
-  
-  return (
-    <Animated.View style={headerStyle}>
-      <Animated.View style={textStyle}>
-        <ThemedText style={styles.header}>Welcome to Brighter Days</ThemedText>
-        <ThemedText style={styles.subheader}>Practical support. Real progress. For parents of children with autism.</ThemedText>
-      </Animated.View>
-    </Animated.View>
   );
 };
 
 export default function WelcomeScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
-  
-  // Handle get started press
+
+  // Handle button actions
   const handleGetStarted = () => {
-    router.push({ pathname: '/choose-focus' });
-  };
-  
-  // Handle learn more press
-  const handleLearnMore = () => {
-    router.push({ pathname: '/learn-more' });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push('/choose-focus');
   };
 
-  // Button animation
-  const Button = ({ onPress, text, delay = 0 }: { onPress: () => void, text: string, delay?: number }) => {
-    const opacity = useSharedValue(0);
-    const translateY = useSharedValue(30);
-    
-    useEffect(() => {
-      opacity.value = withDelay(1500 + delay, withTiming(1, { duration: 800 }));
-      translateY.value = withDelay(1500 + delay, withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) }));
-    }, []);
-    
-    const buttonStyle = useAnimatedStyle(() => {
-      return {
-        opacity: opacity.value,
-        transform: [{ translateY: translateY.value }],
-      };
-    });
-    
-    return (
-      <Animated.View style={buttonStyle}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.primaryButton
-          ]}
-          activeOpacity={0.8}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            onPress();
-          }}
-        >
-          <ThemedText style={styles.primaryButtonText}>{text}</ThemedText>
-        </TouchableOpacity>
-      </Animated.View>
-    );
+  const handleLearnMore = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/learn-more');
+  };
+
+  const handleLogin = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/login');
   };
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
-    >
-      <ScrollView 
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.content}>
-          {/* Sunny animation */}
-          <SunnyAnimated />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+        />
+      </View>
+      
+      <SafeAreaView style={[styles.content, { paddingTop: insets.top }]}>
+        {/* Logo Section */}
+        <Animated.View 
+          entering={FadeIn.delay(100).duration(800)}
+          style={styles.logoSection}
+        >
+          <SunnyLogo />
+        </Animated.View>
+        
+        {/* Welcome Text */}
+        <Animated.View 
+          entering={FadeInDown.delay(300).duration(800)}
+          style={styles.welcomeTextContainer}
+        >
+          <Text style={styles.welcomeTitle}>Welcome to{"\n"}Brighter Days</Text>
+          <Text style={styles.welcomeSubtitle}>Compassionate tools for your parenting journey</Text>
+        </Animated.View>
+        
+        {/* Buttons */}
+        <View style={styles.buttonContainer}>
+          <Animated.View entering={FadeInDown.delay(500).duration(500)}>
+            <TouchableOpacity 
+              style={styles.getStartedButton}
+              onPress={handleGetStarted}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.getStartedButtonText}>Get Started</Text>
+            </TouchableOpacity>
+          </Animated.View>
           
-          {/* Welcome text */}
-          <WelcomeTextAnimated />
+          <Animated.View entering={FadeInDown.delay(600).duration(500)}>
+            <TouchableOpacity 
+              style={styles.secondaryButton}
+              onPress={handleLearnMore}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.secondaryButtonText}>What is Brighter Days?</Text>
+            </TouchableOpacity>
+          </Animated.View>
           
-          {/* Get started button */}
-          <Button 
-            text="Get Started" 
-            onPress={handleGetStarted}
-          />
-          
-          {/* Learn more button */}
-          <Button 
-            text="Learn About Brighter Days" 
-            onPress={handleLearnMore} 
-            delay={200}
-          />
+          <Animated.View entering={FadeInDown.delay(700).duration(500)}>
+            <TouchableOpacity 
+              style={styles.loginButton}
+              onPress={handleLogin}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.loginButtonText}>Log In</Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
-      </ScrollView>
-      <PlayfulBackground />
-    </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -512,135 +142,126 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-  },
-  backgroundContainer: {
+  backgroundPattern: {
     position: 'absolute',
     width: '100%',
     height: '100%',
+    opacity: 0.2,
     zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    gap: 32,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
-  sunnyContainer: {
-    width: 180,
-    height: 180,
-    justifyContent: 'center',
+  logoSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 20,
   },
-  sunCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sunIcon: {
+    width: 60,
+    height: 60,
+    backgroundColor: Colors.common.accent,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    marginBottom: 10,
   },
   sunRay: {
     position: 'absolute',
-    width: 8,
-    height: 30,
-    borderRadius: 4,
-    top: -20,
-    left: 56,
+    width: 4,
+    height: 16,
+    backgroundColor: Colors.common.accent,
+    borderRadius: 2,
+    top: -8,
+    left: 28,
   },
-  sunFace: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
+  logoText: {
+    fontSize: 32,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    lineHeight: 36,
+  },
+  brightText: {
+    color: Colors.common.primary,
+  },
+  daysText: {
+    color: Colors.common.primary,
+  },
+  welcomeTextContainer: {
     alignItems: 'center',
-    padding: 15,
-  },
-  eyesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '50%',
-    marginBottom: 10,
-  },
-  eye: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#8B4513',
-  },
-  smile: {
-    width: 40,
-    height: 20,
-    borderBottomWidth: 3,
-    borderBottomColor: '#8B4513',
-    borderRadius: 10,
+    marginBottom: 40,
   },
   welcomeTitle: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 12,
-    color: '#333333', 
+    marginBottom: 16,
+    color: '#333333',
   },
   welcomeSubtitle: {
     fontSize: 18,
     textAlign: 'center',
-    color: '#555555', 
-    marginBottom: 24,
+    color: '#555555',
+    paddingHorizontal: 20,
   },
-  header: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 12,
-    color: '#333333', 
+  buttonContainer: {
+    gap: 16,
+    width: '100%',
   },
-  subheader: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#555555', 
-    marginBottom: 24,
-  },
-  button: {
+  getStartedButton: {
+    backgroundColor: Colors.common.teal,
     paddingVertical: 16,
-    paddingHorizontal: 32,
     borderRadius: 30,
-    width: 280,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  primaryButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-    width: 280,
-    alignItems: 'center',
-    backgroundColor: Colors.common.primary,
-  },
-  primaryButtonText: {
+  getStartedButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
   secondaryButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-    width: 280,
-    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.common.teal,
     backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: Colors.common.primary,
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secondaryButtonText: {
-    color: Colors.common.primary,
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: Colors.common.teal,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loginButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loginButtonText: {
+    color: '#555555',
+    fontSize: 16,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });

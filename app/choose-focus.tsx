@@ -5,20 +5,19 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Dimensions,
+  Text,
   Platform
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import Animated, { 
   FadeIn,
   FadeInDown
 } from 'react-native-reanimated';
 
-import { ThemedText } from '../components/ThemedText';
-import { ThemedView } from '../components/ThemedView';
 import { Colors } from '../constants/Colors';
-import { useColorScheme } from '../hooks/useColorScheme';
 import { useAppState } from '@/hooks/useAppState';
 
 const { width } = Dimensions.get('window');
@@ -37,7 +36,6 @@ const focusAreas = [
 
 export default function ChooseFocusScreen() {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
   const { updateState } = useAppState();
   const [selectedFocus, setSelectedFocus] = useState<string | null>(null);
 
@@ -59,7 +57,16 @@ export default function ChooseFocusScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+        />
+      </View>
+      
       <ScrollView 
         contentContainerStyle={[
           styles.scrollContent,
@@ -68,7 +75,7 @@ export default function ChooseFocusScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeIn.delay(100).duration(600)}>
-          <ThemedText style={styles.title}>What would you like help with?</ThemedText>
+          <Text style={styles.title}>What would you like help with?</Text>
         </Animated.View>
 
         <View style={styles.optionsGrid}>
@@ -81,20 +88,19 @@ export default function ChooseFocusScreen() {
               <TouchableOpacity
                 style={[
                   styles.optionCard,
-                  selectedFocus === area.id && styles.selectedCard,
-                  { backgroundColor: colorScheme === 'dark' ? Colors.dark.cardBackground : Colors.light.cardBackground }
+                  selectedFocus === area.id && styles.selectedCard
                 ]}
                 onPress={() => handleSelectFocus(area.id)}
                 activeOpacity={0.7}
               >
-                <ThemedText 
+                <Text 
                   style={[
                     styles.optionText,
                     selectedFocus === area.id && styles.selectedText
                   ]}
                 >
                   {area.label}
-                </ThemedText>
+                </Text>
               </TouchableOpacity>
             </Animated.View>
           ))}
@@ -113,27 +119,40 @@ export default function ChooseFocusScreen() {
             disabled={!selectedFocus}
             activeOpacity={0.8}
           >
-            <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
+            <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.light.background, // Use light cream background from Image 2
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.2,
+    zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 30,
+    color: '#333333', // Dark text for better contrast
   },
   optionsGrid: {
     flexDirection: 'row',
@@ -146,11 +165,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   optionCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     minHeight: 80,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF', // White background for cards
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -158,9 +178,9 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    elevation: 2,
+    borderWidth: 1.5,
+    borderColor: '#E1E1E1', // Light border
   },
   selectedCard: {
     borderColor: Colors.common.primary,
@@ -170,6 +190,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'center',
+    color: '#333333', // Dark text for better contrast
   },
   selectedText: {
     color: Colors.common.primary,
@@ -181,7 +202,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   continueButton: {
-    backgroundColor: Colors.common.primary,
+    backgroundColor: Colors.common.teal, // Use teal from Image 2
     paddingHorizontal: 40,
     paddingVertical: 16,
     borderRadius: 30,

@@ -4,20 +4,19 @@ import {
   View, 
   ScrollView, 
   TouchableOpacity,
+  Text,
   Platform
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import Animated, { 
   FadeIn,
   FadeInDown
 } from 'react-native-reanimated';
 
-import { ThemedText } from '../components/ThemedText';
-import { ThemedView } from '../components/ThemedView';
 import { Colors } from '../constants/Colors';
-import { useColorScheme } from '../hooks/useColorScheme';
 import { useAppState } from '@/hooks/useAppState';
 
 // Age options from 1-14
@@ -42,7 +41,6 @@ const feelingOptions = [
 
 export default function PersonalizeScreen() {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
   const { updateState } = useAppState();
   
   const [childAge, setChildAge] = useState<string | null>(null);
@@ -86,7 +84,16 @@ export default function PersonalizeScreen() {
   const isFormComplete = childAge && firstTime && feeling;
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container}>
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+        />
+      </View>
+      
       <ScrollView 
         contentContainerStyle={[
           styles.scrollContent,
@@ -95,12 +102,12 @@ export default function PersonalizeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeIn.delay(100).duration(600)}>
-          <ThemedText style={styles.title}>Let's tailor this for you</ThemedText>
+          <Text style={styles.title}>Let's tailor this for you</Text>
         </Animated.View>
 
         {/* Age Selection */}
         <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-          <ThemedText style={styles.sectionTitle}>My child is:</ThemedText>
+          <Text style={styles.sectionTitle}>My child is:</Text>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -116,14 +123,14 @@ export default function PersonalizeScreen() {
                 onPress={() => handleSelectAge(option.value)}
                 activeOpacity={0.7}
               >
-                <ThemedText 
+                <Text 
                   style={[
                     styles.optionText,
                     childAge === option.value && styles.selectedOptionText
                   ]}
                 >
                   {option.label}
-                </ThemedText>
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -131,9 +138,9 @@ export default function PersonalizeScreen() {
 
         {/* Experience Selection */}
         <Animated.View entering={FadeInDown.delay(300).duration(400)}>
-          <ThemedText style={styles.sectionTitle}>
+          <Text style={styles.sectionTitle}>
             This is my first time using behavior tools:
-          </ThemedText>
+          </Text>
           <View style={styles.optionsRow}>
             {experienceOptions.map((option) => (
               <TouchableOpacity
@@ -145,14 +152,14 @@ export default function PersonalizeScreen() {
                 onPress={() => handleSelectExperience(option.value)}
                 activeOpacity={0.7}
               >
-                <ThemedText 
+                <Text 
                   style={[
                     styles.optionText,
                     firstTime === option.value && styles.selectedOptionText
                   ]}
                 >
                   {option.label}
-                </ThemedText>
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -160,9 +167,9 @@ export default function PersonalizeScreen() {
 
         {/* Feeling Selection */}
         <Animated.View entering={FadeInDown.delay(400).duration(400)}>
-          <ThemedText style={styles.sectionTitle}>
+          <Text style={styles.sectionTitle}>
             Today I'm feeling:
-          </ThemedText>
+          </Text>
           <View style={styles.feelingOptionsContainer}>
             {feelingOptions.map((option) => (
               <TouchableOpacity
@@ -174,15 +181,15 @@ export default function PersonalizeScreen() {
                 onPress={() => handleSelectFeeling(option.value)}
                 activeOpacity={0.7}
               >
-                <ThemedText style={styles.emojiText}>{option.emoji}</ThemedText>
-                <ThemedText 
+                <Text style={styles.emojiText}>{option.emoji}</Text>
+                <Text 
                   style={[
                     styles.optionText,
                     feeling === option.value && styles.selectedOptionText
                   ]}
                 >
                   {option.label}
-                </ThemedText>
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -202,33 +209,47 @@ export default function PersonalizeScreen() {
             disabled={!isFormComplete}
             activeOpacity={0.8}
           >
-            <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
+            <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.light.background, // Use light cream background from Image 2
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.2,
+    zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 30,
+    color: '#333333', // Dark text for better contrast
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
     marginTop: 24,
+    color: '#333333', // Dark text for better contrast
   },
   optionsScroll: {
     paddingRight: 20,
@@ -244,9 +265,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     marginRight: 10,
-    backgroundColor: Colors.light.cardBackground,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    backgroundColor: '#FFFFFF', // White background for cards
+    borderWidth: 1.5,
+    borderColor: '#E1E1E1', // Light border
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -260,9 +281,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 20,
-    backgroundColor: Colors.light.cardBackground,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    backgroundColor: '#FFFFFF', // White background for cards
+    borderWidth: 1.5,
+    borderColor: '#E1E1E1', // Light border
     minWidth: '40%',
     alignItems: 'center',
     shadowColor: "#000",
@@ -281,6 +302,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     textAlign: 'center',
+    color: '#333333', // Dark text for better contrast
   },
   selectedOptionText: {
     color: Colors.common.primary,
@@ -296,12 +318,12 @@ const styles = StyleSheet.create({
     width: '48%',
     paddingVertical: 16,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: 16, // Increased border radius for modern look
     marginBottom: 16,
-    backgroundColor: Colors.light.cardBackground,
+    backgroundColor: '#FFFFFF', // White background for cards
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#E1E1E1', // Light border
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -321,7 +343,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   continueButton: {
-    backgroundColor: Colors.common.primary,
+    backgroundColor: Colors.common.teal, // Use teal from Image 2
     paddingHorizontal: 40,
     paddingVertical: 16,
     borderRadius: 30,
