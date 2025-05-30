@@ -1,6 +1,16 @@
 import { Image } from 'expo-image';
 import React, { useState, useRef } from 'react';
-import { Platform, StyleSheet, TextInput, Text, TouchableOpacity, KeyboardAvoidingView, FlatList, View, StatusBar } from 'react-native';
+import { 
+  Platform, 
+  StyleSheet, 
+  TextInput, 
+  Text, 
+  TouchableOpacity, 
+  KeyboardAvoidingView, 
+  FlatList, 
+  View, 
+  StatusBar 
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,7 +43,7 @@ const initialSuggestions: Suggestion[] = [
 // Sunny's avatar component
 const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
   return (
-    <View style={[styles.sunnyAvatar, { width: size, height: size }]}>
+    <View style={{ marginRight: 8, width: size, height: size }}>
       <View style={{
         backgroundColor: '#FFDB58', // Sunny yellow color
         width: size,
@@ -47,38 +57,55 @@ const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
         {Array(8).fill(0).map((_, i) => (
           <View 
             key={`ray-${i}`} 
-            style={[
-              styles.sunRay, 
-              { 
-                backgroundColor: '#FFDB58', // Match sun color
-                transform: [{ rotate: `${i * 45}deg` }],
-                width: size * 0.08,
-                height: size * 0.2,
-                top: -size * 0.08,
-                left: size * 0.46,
-                borderRadius: size * 0.04,
-              }
-            ]} 
+            style={{
+              position: 'absolute',
+              backgroundColor: '#FFDB58', // Match sun color
+              transform: [{ rotate: `${i * 45}deg` }],
+              width: size * 0.08,
+              height: size * 0.2,
+              top: -size * 0.08,
+              left: size * 0.46,
+              borderRadius: size * 0.04,
+            }} 
           />
         ))}
         
         {/* Sun face */}
-        <View style={styles.sunFace}>
+        <View style={{
+          width: '60%',
+          height: '60%',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
           {/* Eyes */}
-          <View style={styles.eyesContainer}>
-            <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
-            <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '60%',
+            marginBottom: 8,
+          }}>
+            <View style={{ 
+              width: size * 0.1, 
+              height: size * 0.1,
+              backgroundColor: '#8B4513', // Brown eyes
+              borderRadius: size * 0.05,
+            }} />
+            <View style={{ 
+              width: size * 0.1, 
+              height: size * 0.1,
+              backgroundColor: '#8B4513', // Brown eyes
+              borderRadius: size * 0.05,
+            }} />
           </View>
           
           {/* Neutral mouth */}
-          <View style={[
-            styles.smile, 
-            { 
-              width: size * 0.4, 
-              height: size * 0.1, 
-              borderBottomWidth: Math.max(1.5, size * 0.02)
-            }
-          ]} />
+          <View style={{
+            width: size * 0.4,
+            height: size * 0.1,
+            borderBottomWidth: Math.max(1.5, size * 0.02),
+            borderBottomColor: '#8B4513', // Brown smile
+            borderRadius: size * 0.2,
+          }} />
         </View>
       </View>
     </View>
@@ -129,7 +156,7 @@ export default function ChatScreen() {
   
   // Generate initial message based on user selections
   const getInitialMessage = () => {
-    let greeting = "Hi! I'm Sunny, your daily helper. How can I support you today?";
+    let greeting = "Hi! I'm Sunny, your daily helper. I see you'd like help with following directions. What specific challenges are you facing?";
     
     if (state.focusArea) {
       const focusAreaMap: Record<string, string> = {
@@ -187,51 +214,50 @@ export default function ChatScreen() {
     
     // Simulate bot response
     setTimeout(() => {
+      // Generate response based on user message
+      let botResponseText = "I understand you're asking about that. Let me help you with some practical strategies.";
+      
+      // Simple response logic based on keywords
+      if (text.toLowerCase().includes('meltdown')) {
+        botResponseText = "When your child is having a meltdown, try to stay calm and create a safe space. Remove overwhelming stimuli and offer comfort without pressure. Would you like specific steps to follow during a meltdown?";
+      } else if (text.toLowerCase().includes('sleep')) {
+        botResponseText = "Sleep challenges are common. Establishing a consistent bedtime routine with calming activities can help. Would you like more specific sleep strategies?";
+      } else if (text.toLowerCase().includes('communication')) {
+        botResponseText = "For communication skills, try using visual supports, simple language, and giving your child time to process. Would you like more communication strategies?";
+      } else if (text.toLowerCase().includes('reward')) {
+        botResponseText = "Effective reward systems focus on immediate, meaningful reinforcement. Consider using a visual chart that tracks progress. Would you like examples of reward systems?";
+      }
+      
+      // Create bot response
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(text),
+        text: botResponseText,
         sender: 'bot',
         timestamp: new Date(),
       };
       
+      // Add to messages
       setMessages(prev => [...prev, botResponse]);
       
+      // Update suggestions based on context
+      const newSuggestions = [
+        { id: '5', text: 'Tell me more about that' },
+        { id: '6', text: 'How do I start?' },
+        { id: '7', text: 'Give me an example' },
+      ];
+      
+      setSuggestions(newSuggestions);
+      
       // Scroll to bottom
-      if (listRef.current) {
-        listRef.current.scrollToEnd({ animated: true });
-      }
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }, 1000);
-  };
-  
-  // Function to get bot response (placeholder)
-  const getBotResponse = (userMessage: string): string => {
-    // This would be replaced with actual AI logic
-    if (userMessage.toLowerCase().includes('meltdown')) {
-      return "When your child is having a meltdown, try to stay calm and give them space. Remove overwhelming stimuli and offer comfort without pressuring them. Remember that a meltdown is not a choice - it's an expression of overwhelm. Would you like specific steps to follow during a meltdown?";
-    } else if (userMessage.toLowerCase().includes('sleep') || userMessage.toLowerCase().includes('won\'t go to sleep')) {
-      return "Sleep challenges are common. Try creating a consistent bedtime routine with visual supports. Gradually introducing relaxation techniques before bed can help. Would you like to know more about creating a calm sleep environment?";
-    } else if (userMessage.toLowerCase().includes('reward')) {
-      return "Effective reward systems focus on positive reinforcement. Try a token board where your child earns tokens for desired behaviors, which can be exchanged for preferred activities. Keep rewards immediate at first, and be consistent. Would you like help setting up a token system?";
-    } else if (userMessage.toLowerCase().includes('communication')) {
-      return "To improve communication, try using visual supports, simple language, and giving extra processing time. Model the communication skills you'd like to see. Augmentative communication tools can also help bridge gaps. Would you like specific communication strategies for your child's age?";
-    } else {
-      return "Thank you for sharing. I'm here to help with practical strategies tailored to your needs. Could you tell me more about the specific situation you're experiencing?";
-    }
   };
   
   // Handle suggestion press
   const handleSuggestionPress = (suggestion: Suggestion) => {
     handleSendMessage(suggestion.text);
-    
-    // Update suggestions based on context
-    const newSuggestions = [
-      { id: '5', text: 'Tell me more about that' },
-      { id: '6', text: 'How do I start?' },
-      { id: '7', text: 'Need visual resources' },
-      { id: '8', text: 'That didn\'t work for us' },
-    ];
-    
-    setSuggestions(newSuggestions);
   };
   
   // Render message item
@@ -242,7 +268,8 @@ export default function ChatScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-
+      
+      {/* Background Pattern */}
       <View style={styles.backgroundPattern}>
         <Image
           source={require('../../assets/images/sun-pattern.png')}
@@ -257,7 +284,13 @@ export default function ChatScreen() {
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <View style={{ flex: 1, paddingTop: insets.top + 10, paddingBottom: insets.bottom }}>
+        <View style={[
+          styles.content,
+          { 
+            paddingTop: insets.top + 10, 
+            paddingBottom: insets.bottom 
+          }
+        ]}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Chat with Sunny</Text>
           </View>
@@ -270,6 +303,16 @@ export default function ChatScreen() {
             contentContainerStyle={styles.messageList}
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           />
+
+          <View style={styles.suggestionsContainer}>
+            {suggestions.map((suggestion) => (
+              <SuggestionButton
+                key={suggestion.id}
+                suggestion={suggestion}
+                onPress={() => handleSuggestionPress(suggestion)}
+              />
+            ))}
+          </View>
 
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
@@ -297,26 +340,19 @@ export default function ChatScreen() {
               </TouchableOpacity>
             </View>
           </View>
-
-          <View style={styles.suggestionsContainer}>
-            {suggestions.map((suggestion) => (
-              <SuggestionButton
-                key={suggestion.id}
-                suggestion={suggestion}
-                onPress={() => handleSuggestionPress(suggestion)}
-              />
-            ))}
-          </View>
         </View>
       </KeyboardAvoidingView>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF9F0', // Warm white background like in Image 3
+  },
+  content: {
+    flex: 1,
   },
   backgroundPattern: {
     position: 'absolute',
@@ -328,45 +364,6 @@ const styles = StyleSheet.create({
   patternImage: {
     width: '100%',
     height: '100%',
-  },
-  sunnyAvatar: {
-    marginRight: 5,
-  },
-  sunFace: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-  },
-  eyesContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '50%',
-    marginBottom: 5,
-  },
-  eye: {
-    backgroundColor: '#8B4513', // Brown eyes
-    borderRadius: 4,
-  },
-  smile: {
-    borderBottomColor: '#8B4513', // Brown smile
-    borderRadius: 10,
-  },
-  sunRay: {
-    position: 'absolute',
-  },
-  suggestionButton: {
-    margin: 5,
-    padding: 12,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
-  },
-  suggestionText: {
-    fontSize: 14,
-    color: '#555555',
   },
   header: {
     paddingHorizontal: 20,
@@ -383,8 +380,9 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
   messageList: {
-    flex: 1,
+    flexGrow: 1,
     padding: 10,
+    paddingBottom: 20,
   },
   messageBubbleContainer: {
     flexDirection: 'row',
@@ -431,6 +429,24 @@ const styles = StyleSheet.create({
   botMessageText: {
     color: '#333333',
   },
+  suggestionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 10,
+    justifyContent: 'center',
+  },
+  suggestionButton: {
+    margin: 5,
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  suggestionText: {
+    fontSize: 14,
+    color: '#555555',
+  },
   inputContainer: {
     padding: 10,
     paddingBottom: 20,
@@ -463,21 +479,4 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     opacity: 0.5,
   },
-  suggestionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 10,
-    justifyContent: 'center',
-    paddingVertical: 6,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-  },
-  disclaimerText: {
-    fontSize: 11,
-    textAlign: 'center',
-    opacity: 0.7,
-    fontStyle: 'italic',
-  }
 });
