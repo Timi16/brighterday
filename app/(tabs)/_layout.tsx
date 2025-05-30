@@ -31,26 +31,27 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors.common.teal,
-        tabBarInactiveTintColor: '#999999',
+        tabBarInactiveTintColor: '#555555',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: CustomTabBarBackground,
         tabBarStyle: {
-          position: 'absolute',
-          borderTopWidth: 0,
-          elevation: 0,
+          borderTopWidth: 1,
+          borderTopColor: 'rgba(0,0,0,0.1)',
+          elevation: 8,
           height: 60 + (Platform.OS === 'ios' ? insets.bottom : 0),
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
           paddingTop: 5,
-          backgroundColor: 'transparent',
+          backgroundColor: 'white',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 5,
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '500',
+          fontWeight: '600',
+          marginTop: -4,
         },
       }}>
       <Tabs.Screen

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, ScrollView, View, TouchableOpacity, Platform, TextInput, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
@@ -146,9 +146,143 @@ const StrategyCard = ({ strategy }: { strategy: Strategy }) => {
   );
 };
 
+// Strategy creation modal component
+const AddStrategyModal = ({
+  visible,
+  onClose,
+  onSave
+}: {
+  visible: boolean,
+  onClose: () => void,
+  onSave: (strategy: Omit<Strategy, 'id' | 'dateAdded'>) => void
+}) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<Strategy['category']>('behavior');
+  const [notes, setNotes] = useState('');
+
+  const handleSave = () => {
+    if (!title.trim() || !description.trim()) return;
+    
+    onSave({
+      title,
+      description,
+      category,
+      notes: notes.trim() || undefined,
+    });
+    
+    // Reset form
+    setTitle('');
+    setDescription('');
+    setCategory('behavior');
+    setNotes('');
+    
+    onClose();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <ThemedText style={styles.modalTitle}>Add New Strategy</ThemedText>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={24} color="#555" />
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView style={styles.modalContent}>
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Title</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="What's your strategy called?"
+              placeholderTextColor="#999"
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Description</ThemedText>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Describe what you did..."
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Category</ThemedText>
+            <View style={styles.categoryButtons}>
+              {(['sleep', 'food', 'sensory', 'communication', 'behavior'] as Strategy['category'][]).map(cat => (
+                <TouchableOpacity 
+                  key={cat}
+                  style={[styles.categoryButton, category === cat && styles.categoryButtonActive]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setCategory(cat);
+                  }}
+                >
+                  <ThemedText 
+                    style={[styles.categoryButtonText, category === cat && styles.categoryButtonTextActive]}
+                  >
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Notes (Optional)</ThemedText>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Any additional notes or observations..."
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+        </ScrollView>
+        
+        <View style={styles.modalFooter}>
+          <TouchableOpacity 
+            style={styles.saveButton}
+            onPress={handleSave}
+            disabled={!title.trim() || !description.trim()}
+          >
+            <ThemedText style={styles.saveButtonText}>Save Strategy</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
+
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
   const [strategies, setStrategies] = useState<Strategy[]>(initialStrategies);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Handle adding a new strategy
+  const handleAddStrategy = (newStrategyData: Omit<Strategy, 'id' | 'dateAdded'>) => {
+    const newStrategy: Strategy = {
+      ...newStrategyData,
+      id: Date.now().toString(),
+      dateAdded: new Date()
+    };
+
+    setStrategies([newStrategy, ...strategies]);
+  };
 
   return (
     <View style={styles.container}>
@@ -189,12 +323,19 @@ export default function ProgressScreen() {
           style={styles.addButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            // Here you would open a form to add a new strategy
+            setModalVisible(true);
           }}
         >
           <ThemedText style={styles.addButtonText}>+ Add New Strategy</ThemedText>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Add Strategy Modal */}
+      <AddStrategyModal 
+        visible={modalVisible} 
+        onClose={() => setModalVisible(false)} 
+        onSave={handleAddStrategy} 
+      />
     </View>
   );
 }
@@ -328,6 +469,112 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContainer: {
+    width: '90%',
+    maxHeight: '80%',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  modalContent: {
+    padding: 16,
+    maxHeight: '70%',
+  },
+  modalFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#333333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    color: '#333333',
+    backgroundColor: '#f9f9f9',
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  categoryButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  categoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: '#f0f0f0',
+    marginBottom: 8,
+  },
+  categoryButtonActive: {
+    backgroundColor: Colors.common.teal,
+    borderColor: Colors.common.teal,
+  },
+  categoryButtonText: {
+    fontSize: 12,
+    color: '#333333',
+  },
+  categoryButtonTextActive: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  saveButton: {
+    backgroundColor: Colors.common.teal,
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',

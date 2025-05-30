@@ -424,17 +424,22 @@ const styles = StyleSheet.create({
     color: '#777777',
   },
   signOutButton: {
-    marginTop: 8,
-    padding: 14,
+    marginTop: 24,
+    marginBottom: 20,
+    padding: 16,
     borderRadius: 25,
-    borderWidth: 1,
-    borderColor: '#FF6B6B', // Soft red
+    borderWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,107,107,0.1)', // Very light red
+    backgroundColor: '#FF6B6B', // Solid red
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   signOutText: {
-    color: '#FF6B6B', // Soft red
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
