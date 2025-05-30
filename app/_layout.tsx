@@ -7,6 +7,7 @@ import { View, ActivityIndicator, Text } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { AppStateProvider } from '@/hooks/useAppState';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -29,13 +30,14 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={{ 
-        flex: 1,
-        backgroundColor: Colors.light.background
-      }}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <Stack
+    <AppStateProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <View style={{ 
+          flex: 1,
+          backgroundColor: Colors.light.background
+        }}>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <Stack
           initialRouteName="welcome"
           screenOptions={{
             animation: 'fade',
@@ -56,7 +58,8 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
-      </View>
-    </ThemeProvider>
+        </View>
+      </ThemeProvider>
+    </AppStateProvider>
   );
 }

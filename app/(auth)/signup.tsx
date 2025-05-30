@@ -254,7 +254,7 @@ export default function SignupScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
       >
-      {/* Custom back button with better styling */}
+      {/* Back button as icon */}
       <TouchableOpacity 
         style={[styles.backButton, { marginTop: insets.top || 20 }]}
         onPress={() => {
@@ -262,7 +262,10 @@ export default function SignupScreen() {
           router.replace('/welcome');
         }}
       >
-        <ThemedText style={styles.backButtonText}>Back</ThemedText>
+        <View style={styles.backArrow}>
+          <View style={styles.backArrowLine} />
+          <View style={styles.backArrowPoint} />
+        </View>
       </TouchableOpacity>
       
       {/* Decorative shapes */}
@@ -292,9 +295,8 @@ export default function SignupScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header - improved structure */}
-        <Animated.View style={[styles.header, headerStyle]}>
-          <ThemedText type="title" style={styles.title}>Create Account</ThemedText>
+        {/* No header - just subtitle as context */}
+        <Animated.View style={[styles.simpleIntro, headerStyle]}>
           <ThemedText style={styles.subtitle}>
             Let's get started on your journey to brighter days
           </ThemedText>
@@ -366,37 +368,56 @@ const styles = StyleSheet.create({
     top: 20,
     left: 20,
     zIndex: 10,
-    padding: 8,
-    backgroundColor: '#F0F9FF',
-    borderRadius: 8,
+    padding: 10,
+    backgroundColor: '#00A3E0',
+    borderRadius: 25,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  backButtonText: {
-    color: '#0078A7',
-    fontWeight: '500',
-    fontSize: 16,
+  backArrow: {
+    width: 22,
+    height: 12,
+    position: 'relative',
   },
-  header: {
-    marginBottom: 15,
-    alignItems: 'flex-start', // Left-aligned for better structure
-    paddingTop: 10,
+  backArrowLine: {
+    position: 'absolute',
+    top: 5,
+    left: 1,
+    width: 18,
+    height: 2,
+    backgroundColor: 'white',
+  },
+  backArrowPoint: {
+    position: 'absolute',
+    top: 5,
+    left: 0,
+    width: 8,
+    height: 8,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: 'white',
+    transform: [{ rotate: '45deg' }, { translateY: -3 }],
+  },
+  simpleIntro: {
+    marginBottom: 12,
+    alignItems: 'center',
+    paddingTop: 0,
     width: '100%',
   },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333333',
-  },
   subtitle: {
-    fontSize: 15,
-    color: '#555555',
-    marginBottom: 16,
-    lineHeight: 20,
+    fontSize: 16,
+    color: '#00A3E0',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 22,
   },
   form: {
     width: '100%',

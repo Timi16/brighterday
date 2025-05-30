@@ -19,6 +19,7 @@ export const Colors = {
     background: backgroundLight,
     tint: primaryColor,
     card: '#FFFFFF',
+    cardBackground: '#FFFFFF',
     
     // Text colors
     text: '#2D2D2D',                // Deep Charcoal
@@ -49,6 +50,7 @@ export const Colors = {
     background: backgroundDark,
     tint: primaryColor,
     card: '#3A3A3A',
+    cardBackground: '#3A3A3A',
     
     // Text colors
     text: '#ECEDEE',
@@ -80,6 +82,7 @@ export const Colors = {
     teal: calmTeal,
     sunnyGradient: ['#FFD966', '#FFB347'],
     primaryGradient: [primaryColor, '#5BA3D0'],
+    primaryLight: 'rgba(115, 194, 251, 0.15)',
     transparentPrimary: 'rgba(115, 194, 251, 0.2)',
     transparentAccent: 'rgba(255, 217, 102, 0.2)',
   }

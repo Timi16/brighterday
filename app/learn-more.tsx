@@ -246,7 +246,7 @@ export default function LearnMoreScreen() {
   
   return (
     <ThemedView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
-      {/* Back button - improved styling */}
+      {/* Back button as icon */}
       <TouchableOpacity 
         style={[styles.backButton, { marginTop: insets.top || 20 }]}
         onPress={() => {
@@ -254,7 +254,10 @@ export default function LearnMoreScreen() {
           handleBack();
         }}
       >
-        <ThemedText style={styles.backButtonText}>← Back</ThemedText>
+        <View style={styles.backArrow}>
+          <View style={styles.backArrowLine} />
+          <View style={styles.backArrowPoint} />
+        </View>
       </TouchableOpacity>
       
       <ScrollView
@@ -329,10 +332,10 @@ export default function LearnMoreScreen() {
           />
         </View>
         
-        {/* Testimonial - solid background for better visibility */}
+        {/* Testimonial - consistent color scheme */}
         <Animated.View 
           entering={FadeIn.delay(1000).duration(800)}
-          style={[styles.testimonialContainer, { backgroundColor: '#FFF2D9', borderWidth: 1, borderColor: '#FFD88D' }]}
+          style={[styles.testimonialContainer, { backgroundColor: '#E4F7FF', borderWidth: 1, borderColor: '#BEE6F8' }]}
         >
           <ThemedText style={styles.testimonialQuote}>
             "Brighter Days has been a game-changer for our family. The strategies suggested by Sunny helped us transform our morning routine from chaos to calm."
@@ -342,7 +345,7 @@ export default function LearnMoreScreen() {
           </ThemedText>
         </Animated.View>
         
-        {/* Get Started button */}
+        {/* Get Started button - with FREE text to ensure it fits */}
         <Animated.View
           entering={FadeIn.delay(1200).duration(800)}
           style={styles.buttonContainer}
@@ -355,7 +358,7 @@ export default function LearnMoreScreen() {
             }}
             activeOpacity={0.7}
           >
-            <ThemedText style={styles.buttonText}>Get Started Now</ThemedText>
+            <ThemedText style={styles.buttonText}>Get Started For Free</ThemedText>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
@@ -378,18 +381,42 @@ const styles = StyleSheet.create({
     top: 20,
     left: 20,
     zIndex: 10,
-    padding: 8,
-    backgroundColor: '#F0F9FF',
-    borderRadius: 8,
+    padding: 10,
+    backgroundColor: '#00A3E0',
+    borderRadius: 25,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  backButtonText: {
-    fontWeight: '500',
-    color: '#0078A7',
+  backArrow: {
+    width: 22,
+    height: 12,
+    position: 'relative',
+  },
+  backArrowLine: {
+    position: 'absolute',
+    top: 5,
+    left: 1,
+    width: 18,
+    height: 2,
+    backgroundColor: 'white',
+  },
+  backArrowPoint: {
+    position: 'absolute',
+    top: 5,
+    left: 0,
+    width: 8,
+    height: 8,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: 'white',
+    transform: [{ rotate: '45deg' }, { translateY: -3 }],
   },
   header: {
     alignItems: 'center',
@@ -511,29 +538,32 @@ const styles = StyleSheet.create({
     color: '#0078A7',
   },
   buttonContainer: {
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 20,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 4,
+    width: '100%',
+    paddingHorizontal: 0,
   },
   button: {
-    height: 54,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+    width: '100%',
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },

@@ -411,10 +411,8 @@ const WelcomeTextAnimated = () => {
   return (
     <Animated.View style={headerStyle}>
       <Animated.View style={textStyle}>
-        <ThemedText style={styles.welcomeTitle} type="title">Welcome to Brighter Days</ThemedText>
-        <ThemedText style={styles.welcomeSubtitle}>
-          Support for your parenting journey
-        </ThemedText>
+        <ThemedText style={styles.header}>Welcome to Brighter Days</ThemedText>
+        <ThemedText style={styles.subheader}>Practical support. Real progress. For parents of children with autism.</ThemedText>
       </Animated.View>
     </Animated.View>
   );
@@ -426,7 +424,7 @@ export default function WelcomeScreen() {
   
   // Handle get started press
   const handleGetStarted = () => {
-    router.push({ pathname: '/(auth)/signup' });
+    router.push({ pathname: '/choose-focus' });
   };
   
   // Handle learn more press
@@ -456,15 +454,15 @@ export default function WelcomeScreen() {
         <TouchableOpacity
           style={[
             styles.button,
-            { backgroundColor: Colors.common.teal }
+            styles.primaryButton
           ]}
+          activeOpacity={0.8}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onPress();
           }}
-          activeOpacity={0.8}
         >
-          <ThemedText style={styles.buttonText}>{text}</ThemedText>
+          <ThemedText style={styles.primaryButtonText}>{text}</ThemedText>
         </TouchableOpacity>
       </Animated.View>
     );
@@ -592,6 +590,19 @@ const styles = StyleSheet.create({
     color: '#555555', 
     marginBottom: 24,
   },
+  header: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 12,
+    color: '#333333', 
+  },
+  subheader: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: '#555555', 
+    marginBottom: 24,
+  },
   button: {
     paddingVertical: 16,
     paddingHorizontal: 32,
@@ -601,6 +612,34 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  primaryButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+    width: 280,
+    alignItems: 'center',
+    backgroundColor: Colors.common.primary,
+  },
+  primaryButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  secondaryButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+    width: 280,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: Colors.common.primary,
+  },
+  secondaryButtonText: {
+    color: Colors.common.primary,
     fontSize: 18,
     fontWeight: 'bold',
   },
