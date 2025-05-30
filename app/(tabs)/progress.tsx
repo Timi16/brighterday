@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Strategy type definition
 type Strategy = {
@@ -65,7 +65,6 @@ const RatingEmoji = ({ rating }: { rating?: 'success' | 'neutral' | 'challenging
 
 // Category badge component
 const CategoryBadge = ({ category }: { category: Strategy['category'] }) => {
-  const colorScheme = useColorScheme();
   let backgroundColor;
   let label;
 
@@ -91,7 +90,7 @@ const CategoryBadge = ({ category }: { category: Strategy['category'] }) => {
       label = 'Behavior';
       break;
     default:
-      backgroundColor = Colors[colorScheme ?? 'light'].border;
+      backgroundColor = '#E1E1E1';
       label = 'Other';
   }
 
@@ -104,7 +103,6 @@ const CategoryBadge = ({ category }: { category: Strategy['category'] }) => {
 
 // Strategy card component
 const StrategyCard = ({ strategy }: { strategy: Strategy }) => {
-  const colorScheme = useColorScheme();
   const formattedDate = strategy.dateAdded.toLocaleDateString('en-US', { 
     month: 'short', 
     day: 'numeric' 
@@ -122,7 +120,7 @@ const StrategyCard = ({ strategy }: { strategy: Strategy }) => {
       activeOpacity={0.7}
       onPress={toggleExpanded}
     >
-      <ThemedView style={[styles.card, { backgroundColor: Colors[colorScheme ?? 'light'].card }]}>
+      <View style={styles.card}>
         <View style={styles.cardHeader}>
           <CategoryBadge category={strategy.category} />
           <ThemedText style={styles.date}>{formattedDate}</ThemedText>
@@ -130,34 +128,43 @@ const StrategyCard = ({ strategy }: { strategy: Strategy }) => {
         
         <View style={styles.cardContent}>
           <View style={styles.titleRow}>
-            <ThemedText type="subtitle" style={styles.title}>{strategy.title}</ThemedText>
+            <ThemedText style={styles.title}>{strategy.title}</ThemedText>
             <RatingEmoji rating={strategy.rating} />
           </View>
           
           <ThemedText style={styles.description}>{strategy.description}</ThemedText>
           
           {expanded && strategy.notes && (
-            <ThemedView style={styles.notesContainer}>
-              <ThemedText type="defaultSemiBold">Notes:</ThemedText>
+            <View style={styles.notesContainer}>
+              <ThemedText style={styles.notesLabel}>Notes:</ThemedText>
               <ThemedText style={styles.notes}>{strategy.notes}</ThemedText>
-            </ThemedView>
+            </View>
           )}
         </View>
-      </ThemedView>
+      </View>
     </TouchableOpacity>
   );
 };
 
 export default function ProgressScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [strategies, setStrategies] = useState<Strategy[]>(initialStrategies);
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+    <View style={styles.container}>
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+          cachePolicy="memory"
+        />
+      </View>
+
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top || 16 }]}>
-        <ThemedText type="title">Progress Tracker</ThemedText>
+        <ThemedText style={styles.headerTitle}>Progress Tracker</ThemedText>
       </View>
 
       <ScrollView 
@@ -179,7 +186,7 @@ export default function ProgressScreen() {
 
         {/* Add new strategy button */}
         <TouchableOpacity 
-          style={[styles.addButton, { backgroundColor: Colors.common.teal }]}
+          style={styles.addButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             // Here you would open a form to add a new strategy
@@ -188,22 +195,37 @@ export default function ProgressScreen() {
           <ThemedText style={styles.addButtonText}>+ Add New Strategy</ThemedText>
         </TouchableOpacity>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF9F0', // Warm white background
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.15,
+    zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Platform.select({
-      ios: 'rgba(0,0,0,0.1)',
-      default: '#E1E1E1'
-    }),
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#333333',
   },
   scrollView: {
     flex: 1,
@@ -218,7 +240,7 @@ const styles = StyleSheet.create({
   timelineLine: {
     width: 2,
     height: 20,
-    backgroundColor: '#E1E1E1',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     alignSelf: 'center',
     marginVertical: 4,
   },
@@ -226,6 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 4,
+    backgroundColor: 'white',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -249,50 +272,64 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     marginRight: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
   },
   description: {
     fontSize: 14,
     lineHeight: 20,
+    color: '#555555',
   },
   date: {
     fontSize: 12,
+    color: '#888888',
+  },
+  emoji: {
+    fontSize: 18,
   },
   categoryBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   categoryText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-  },
-  emoji: {
-    fontSize: 18,
+    fontWeight: '500',
+    color: '#333333',
   },
   notesContainer: {
     marginTop: 8,
     padding: 8,
-    backgroundColor: Platform.select({
-      ios: 'rgba(0,0,0,0.03)',
-      default: '#f5f5f5'
-    }),
+    backgroundColor: 'rgba(0,0,0,0.03)',
     borderRadius: 8,
   },
+  notesLabel: {
+    fontWeight: '600',
+    marginBottom: 4,
+    color: '#333333',
+  },
   notes: {
-    fontSize: 14,
-    fontStyle: 'italic',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#555555',
   },
   addButton: {
     marginTop: 24,
-    padding: 16,
-    borderRadius: 12,
+    padding: 14,
+    borderRadius: 25,
+    backgroundColor: Colors.common.teal,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   addButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: 'white',
     fontSize: 16,
+    fontWeight: '600',
   },
 });

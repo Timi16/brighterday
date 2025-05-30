@@ -3,11 +3,10 @@ import { StyleSheet, ScrollView, View, TouchableOpacity, Platform, Dimensions, F
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Tip/Guide type definition
 type Tip = {
@@ -17,7 +16,7 @@ type Tip = {
   category: 'mealtime' | 'tantrums' | 'communication' | 'sleep' | 'sensory' | 'selfcare';
   badges: Array<'expert' | 'favorite' | 'quick' | 'new'>;
   content?: string;
-  imageUrl?: string;
+  imageUrl?: any; // Using any for the require() image type
 };
 
 // Sample tips data
@@ -77,29 +76,28 @@ type CategoryFilter = 'all' | Tip['category'];
 
 // Badge component
 const Badge = ({ type }: { type: Tip['badges'][0] }) => {
-  const colorScheme = useColorScheme();
   let backgroundColor: string;
   let label: string;
   
   switch (type) {
     case 'expert':
-      backgroundColor = Colors[colorScheme ?? 'light'].primary;
+      backgroundColor = Colors.common.teal;
       label = 'ABA Verified';
       break;
     case 'favorite':
-      backgroundColor = Colors.common.accent;
+      backgroundColor = '#FFDB58'; // Sunny yellow
       label = 'Parent Favorite';
       break;
     case 'quick':
-      backgroundColor = Colors[colorScheme ?? 'light'].success;
+      backgroundColor = '#73C2FB'; // Light blue
       label = 'Quick Read';
       break;
     case 'new':
-      backgroundColor = Colors.common.teal;
+      backgroundColor = '#C39BD3'; // Light purple
       label = 'New';
       break;
     default:
-      backgroundColor = Colors[colorScheme ?? 'light'].border;
+      backgroundColor = '#E1E1E1';
       label = type;
   }
 
@@ -118,7 +116,6 @@ const CategorySelector = ({
   selected: CategoryFilter, 
   onSelect: (category: CategoryFilter) => void 
 }) => {
-  const colorScheme = useColorScheme();
   const categories: Array<{ value: CategoryFilter; label: string }> = [
     { value: 'all', label: 'All' },
     { value: 'mealtime', label: 'Mealtime' },
@@ -141,8 +138,8 @@ const CategorySelector = ({
           style={[
             styles.categoryButton,
             selected === category.value && { 
-              backgroundColor: Colors[colorScheme ?? 'light'].primary,
-              borderColor: Colors[colorScheme ?? 'light'].primary,
+              backgroundColor: Colors.common.teal,
+              borderColor: Colors.common.teal,
             }
           ]}
           onPress={() => {
@@ -166,14 +163,9 @@ const CategorySelector = ({
 
 // Tip card component
 const TipCard = ({ tip, onPress }: { tip: Tip, onPress: () => void }) => {
-  const colorScheme = useColorScheme();
-  
   return (
     <TouchableOpacity 
-      style={[
-        styles.tipCard, 
-        { backgroundColor: Colors[colorScheme ?? 'light'].card }
-      ]}
+      style={styles.tipCard}
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
@@ -188,7 +180,7 @@ const TipCard = ({ tip, onPress }: { tip: Tip, onPress: () => void }) => {
         />
       )}
       <View style={styles.tipContent}>
-        <ThemedText type="subtitle" style={styles.tipTitle}>{tip.title}</ThemedText>
+        <ThemedText style={styles.tipTitle}>{tip.title}</ThemedText>
         <ThemedText style={styles.tipSummary}>{tip.summary}</ThemedText>
         
         <View style={styles.badgeContainer}>
@@ -202,7 +194,6 @@ const TipCard = ({ tip, onPress }: { tip: Tip, onPress: () => void }) => {
 };
 
 export default function TipsScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [tips, setTips] = useState<Tip[]>(initialTips);
@@ -219,10 +210,20 @@ export default function TipsScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+    <View style={styles.container}>
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+          cachePolicy="memory"
+        />
+      </View>
+
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top || 16 }]}>
-        <ThemedText type="title">Tips & Guides</ThemedText>
+        <ThemedText style={styles.headerTitle}>Tips & Guides</ThemedText>
       </View>
       
       {/* Category filter */}
@@ -238,22 +239,37 @@ export default function TipsScreen() {
         contentContainerStyle={styles.tipsList}
         showsVerticalScrollIndicator={false}
       />
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF9F0', // Warm white background
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.15,
+    zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Platform.select({
-      ios: 'rgba(0,0,0,0.1)',
-      default: '#E1E1E1'
-    }),
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#333333',
   },
   categorySelector: {
     paddingHorizontal: 16,
@@ -266,11 +282,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E1E1E1',
+    borderColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'white',
   },
   categoryButtonText: {
     fontSize: 14,
     fontWeight: '500',
+    color: '#333333',
   },
   tipsList: {
     padding: 16,
@@ -280,6 +298,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     overflow: 'hidden',
+    backgroundColor: 'white',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -296,11 +315,15 @@ const styles = StyleSheet.create({
   },
   tipTitle: {
     marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
   },
   tipSummary: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
+    color: '#555555',
   },
   badgeContainer: {
     flexDirection: 'row',

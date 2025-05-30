@@ -3,11 +3,10 @@ import { StyleSheet, ScrollView, View, TouchableOpacity, Switch, Platform, Alert
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Child profile type
 type ChildProfile = {
@@ -72,7 +71,7 @@ const initialSettings: Setting[] = [
 const ProfileSection = ({ title, children }: { title: string, children: React.ReactNode }) => {
   return (
     <View style={styles.section}>
-      <ThemedText type="subtitle" style={styles.sectionTitle}>{title}</ThemedText>
+      <ThemedText style={styles.sectionTitle}>{title}</ThemedText>
       {children}
     </View>
   );
@@ -86,12 +85,10 @@ const SettingToggle = ({
   setting: Setting, 
   onToggle: (id: string, enabled: boolean) => void 
 }) => {
-  const colorScheme = useColorScheme();
-  
   return (
     <View style={styles.settingItem}>
       <View style={styles.settingInfo}>
-        <ThemedText type="defaultSemiBold">{setting.title}</ThemedText>
+        <ThemedText style={styles.settingTitle}>{setting.title}</ThemedText>
         <ThemedText style={styles.settingDescription}>{setting.description}</ThemedText>
       </View>
       <Switch
@@ -116,20 +113,18 @@ const SettingToggle = ({
 
 // Child profile card component
 const ChildProfileCard = ({ profile, onEdit }: { profile: ChildProfile, onEdit: () => void }) => {
-  const colorScheme = useColorScheme();
-  
   return (
-    <ThemedView style={[styles.profileCard, { backgroundColor: Colors[colorScheme ?? 'light'].card }]}>
+    <View style={styles.profileCard}>
       <View style={styles.profileHeader}>
         <View style={styles.profileAvatar}>
           <ThemedText style={styles.avatarText}>{profile.name.charAt(0).toUpperCase()}</ThemedText>
         </View>
         <View style={styles.profileInfo}>
-          <ThemedText type="title">{profile.name}</ThemedText>
+          <ThemedText style={styles.profileName}>{profile.name}</ThemedText>
           <ThemedText style={styles.profileAge}>{profile.age} years old</ThemedText>
         </View>
         <TouchableOpacity
-          style={[styles.editButton, { backgroundColor: Colors[colorScheme ?? 'light'].primary }]}
+          style={styles.editButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onEdit();
@@ -141,12 +136,12 @@ const ChildProfileCard = ({ profile, onEdit }: { profile: ChildProfile, onEdit: 
       
       <View style={styles.profileDetails}>
         <View style={styles.detailSection}>
-          <ThemedText type="defaultSemiBold">Interests</ThemedText>
+          <ThemedText style={styles.detailTitle}>Interests</ThemedText>
           <View style={styles.tagContainer}>
             {profile.interests.map((interest, index) => (
               <View 
                 key={`interest-${index}`} 
-                style={[styles.tag, { backgroundColor: Colors[colorScheme ?? 'light'].transparentPrimary }]}
+                style={[styles.tag, { backgroundColor: 'rgba(115, 194, 251, 0.2)' }]} // Light blue
               >
                 <ThemedText style={styles.tagText}>{interest}</ThemedText>
               </View>
@@ -155,12 +150,12 @@ const ChildProfileCard = ({ profile, onEdit }: { profile: ChildProfile, onEdit: 
         </View>
         
         <View style={styles.detailSection}>
-          <ThemedText type="defaultSemiBold">Current Challenges</ThemedText>
+          <ThemedText style={styles.detailTitle}>Current Challenges</ThemedText>
           <View style={styles.tagContainer}>
             {profile.challenges.map((challenge, index) => (
               <View 
                 key={`challenge-${index}`} 
-                style={[styles.tag, { backgroundColor: Colors[colorScheme ?? 'light'].transparentAccent }]}
+                style={[styles.tag, { backgroundColor: 'rgba(255, 219, 88, 0.2)' }]} // Light yellow
               >
                 <ThemedText style={styles.tagText}>{challenge}</ThemedText>
               </View>
@@ -168,12 +163,11 @@ const ChildProfileCard = ({ profile, onEdit }: { profile: ChildProfile, onEdit: 
           </View>
         </View>
       </View>
-    </ThemedView>
+    </View>
   );
 };
 
 export default function ProfileScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const [childProfile, setChildProfile] = useState<ChildProfile>(initialChildProfile);
   const [settings, setSettings] = useState<Setting[]>(initialSettings);
@@ -198,10 +192,20 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+    <View style={styles.container}>
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+          cachePolicy="memory"
+        />
+      </View>
+
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top || 16 }]}>
-        <ThemedText type="title">Profile</ThemedText>
+        <ThemedText style={styles.headerTitle}>Profile</ThemedText>
       </View>
       
       <ScrollView 
@@ -255,33 +259,48 @@ export default function ProfileScreen() {
         
         {/* Sign Out Button */}
         <TouchableOpacity 
-          style={[styles.signOutButton, { borderColor: Colors[colorScheme ?? 'light'].error }]}
+          style={styles.signOutButton}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             handleSignOut();
           }}
         >
-          <ThemedText style={[styles.signOutText, { color: Colors[colorScheme ?? 'light'].error }]}>
+          <ThemedText style={styles.signOutText}>
             Sign Out
           </ThemedText>
         </TouchableOpacity>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF9F0', // Warm white background
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.15,
+    zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
   },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Platform.select({
-      ios: 'rgba(0,0,0,0.1)',
-      default: '#E1E1E1'
-    }),
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#333333',
   },
   scrollView: {
     flex: 1,
@@ -294,11 +313,15 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 12,
+    color: '#333333',
   },
   profileCard: {
     borderRadius: 12,
     padding: 16,
+    backgroundColor: 'white',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -314,7 +337,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.common.accent,
+    backgroundColor: '#FFDB58', // Sunny yellow
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -327,14 +350,20 @@ const styles = StyleSheet.create({
   profileInfo: {
     flex: 1,
   },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333333',
+  },
   profileAge: {
     fontSize: 14,
-    opacity: 0.7,
+    color: '#777777',
   },
   editButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    backgroundColor: Colors.common.teal,
   },
   editButtonText: {
     color: '#FFFFFF',
@@ -347,6 +376,11 @@ const styles = StyleSheet.create({
   detailSection: {
     gap: 8,
   },
+  detailTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333333',
+  },
   tagContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -358,33 +392,50 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   tagText: {
-    fontSize: 12,
+    fontSize: 13,
+    color: '#333333',
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E1E1E1',
+    padding: 12,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   settingInfo: {
     flex: 1,
     marginRight: 16,
   },
+  settingTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+    color: '#333333',
+  },
   settingDescription: {
-    fontSize: 12,
-    opacity: 0.7,
-    marginTop: 4,
+    fontSize: 13,
+    color: '#777777',
   },
   signOutButton: {
+    marginTop: 8,
+    padding: 14,
+    borderRadius: 25,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderColor: '#FF6B6B', // Soft red
     alignItems: 'center',
-    marginTop: 12,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,107,107,0.1)', // Very light red
   },
   signOutText: {
+    color: '#FF6B6B', // Soft red
+    fontSize: 16,
     fontWeight: '600',
   },
 });
