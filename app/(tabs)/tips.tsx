@@ -131,6 +131,7 @@ const CategorySelector = ({
       horizontal 
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.categorySelector}
+      style={styles.categorySelectorContainer}
     >
       {categories.map(category => (
         <TouchableOpacity
@@ -273,19 +274,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
   },
+  categorySelectorContainer: {
+    paddingHorizontal: 8,
+  },
   categorySelector: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    gap: 8,
+    gap: 12,
   },
   categoryButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
+    marginRight: 10,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.1)',
     backgroundColor: 'white',
+    minWidth: 80, // Ensure minimum width for text to display fully
   },
   categoryButtonText: {
     fontSize: 14,
