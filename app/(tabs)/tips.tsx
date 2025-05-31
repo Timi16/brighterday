@@ -16,10 +16,10 @@ type Tip = {
   category: 'mealtime' | 'tantrums' | 'communication' | 'sleep' | 'sensory' | 'selfcare';
   badges: Array<'expert' | 'favorite' | 'quick' | 'new'>;
   content?: string;
-  imageUrl?: any; // Using any for the require() image type
+  imageUrl?: string; // Using string for Unsplash image URLs
 };
 
-// Sample tips data
+// Sample tips data with real Unsplash images
 const initialTips: Tip[] = [
   {
     id: '1',
@@ -27,7 +27,7 @@ const initialTips: Tip[] = [
     summary: 'Step-by-step guide to creating effective visual schedules for daily routines',
     category: 'communication',
     badges: ['expert', 'favorite'],
-    imageUrl: require('@/assets/images/icon.png'), // Placeholder image
+    imageUrl: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=700&auto=format&fit=crop',
   },
   {
     id: '2',
@@ -35,7 +35,7 @@ const initialTips: Tip[] = [
     summary: 'Strategies for introducing new foods and creating positive mealtime experiences',
     category: 'mealtime',
     badges: ['favorite'],
-    imageUrl: require('@/assets/images/icon.png'), // Placeholder image
+    imageUrl: 'https://images.unsplash.com/photo-1594589350587-0ba707451fad?q=80&w=700&auto=format&fit=crop',
   },
   {
     id: '3',
@@ -43,7 +43,7 @@ const initialTips: Tip[] = [
     summary: '10 sensory activities to help regulate emotions and reduce stress',
     category: 'sensory',
     badges: ['quick', 'new'],
-    imageUrl: require('@/assets/images/icon.png'), // Placeholder image
+    imageUrl: 'https://images.unsplash.com/photo-1619468129361-605ebea04b44?q=80&w=700&auto=format&fit=crop',
   },
   {
     id: '4',
@@ -51,7 +51,7 @@ const initialTips: Tip[] = [
     summary: 'How to identify and address common tantrum triggers',
     category: 'tantrums',
     badges: ['expert'],
-    imageUrl: require('@/assets/images/icon.png'), // Placeholder image
+    imageUrl: 'https://images.unsplash.com/photo-1553642472-a95441373ef7?q=80&w=700&auto=format&fit=crop',
   },
   {
     id: '5',
@@ -59,7 +59,7 @@ const initialTips: Tip[] = [
     summary: 'Create a customized bedtime routine with sensory-friendly options',
     category: 'sleep',
     badges: ['new'],
-    imageUrl: require('@/assets/images/icon.png'), // Placeholder image
+    imageUrl: 'https://images.unsplash.com/photo-1520206444322-d2df0dd4e78e?q=80&w=700&auto=format&fit=crop',
   },
   {
     id: '6',
@@ -67,7 +67,7 @@ const initialTips: Tip[] = [
     summary: 'Quick practices for maintaining your own wellbeing',
     category: 'selfcare',
     badges: ['quick'],
-    imageUrl: require('@/assets/images/icon.png'), // Placeholder image
+    imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=700&auto=format&fit=crop',
   },
 ];
 
@@ -174,9 +174,11 @@ const TipCard = ({ tip, onPress }: { tip: Tip, onPress: () => void }) => {
     >
       {tip.imageUrl && (
         <Image
-          source={tip.imageUrl}
+          source={{ uri: tip.imageUrl }}
           style={styles.tipImage}
           contentFit="cover"
+          transition={200}
+          cachePolicy="memory"
         />
       )}
       <View style={styles.tipContent}>

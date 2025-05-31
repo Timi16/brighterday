@@ -47,6 +47,7 @@ export default function TabLayout() {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 3,
+          justifyContent: 'space-evenly',
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -85,7 +86,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          href: null,
+          tabBarButton: () => null, // Hide this tab completely
         }}
       />
     </Tabs>
