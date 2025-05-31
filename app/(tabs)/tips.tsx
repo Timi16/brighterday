@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
@@ -170,13 +171,26 @@ const CategorySelector = ({
 
 // Tip card component
 const TipCard = ({ tip, onPress }: { tip: Tip, onPress: () => void }) => {
+  const router = useRouter();
+  
+  const navigateToDetail = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push({
+      pathname: '/tipdetail',
+      params: { 
+        id: tip.id,
+        title: tip.title,
+        summary: tip.summary,
+        imageUrl: tip.imageUrl,
+        badges: tip.badges.join(','),
+      }
+    });
+  };
+  
   return (
     <TouchableOpacity 
       style={styles.tipCard}
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
+      onPress={navigateToDetail}
       activeOpacity={0.7}
     >
       {tip.imageUrl && (
@@ -204,6 +218,7 @@ const TipCard = ({ tip, onPress }: { tip: Tip, onPress: () => void }) => {
 
 export default function TipsScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [tips, setTips] = useState<Tip[]>(initialTips);
   
