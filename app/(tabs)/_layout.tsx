@@ -42,25 +42,27 @@ export default function TabLayout() {
           height: 78 + (Platform.OS === 'ios' ? insets.bottom : 0),
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
           paddingTop: 10,
-          paddingHorizontal: 20,
+          paddingHorizontal: 30, // Increased for better spacing
           backgroundColor: 'white',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 3,
-          justifyContent: 'space-evenly',
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
-          marginTop: 0,
+          marginTop: 4, // Added small margin for better spacing
           paddingBottom: 6,
+        },
+        tabBarIconStyle: {
+          marginBottom: 2, // Added margin for better icon spacing
         },
       }}>
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat with Sunny',
+          title: 'Chat',
           tabBarIcon: ({ color, size }) => <Ionicons name="sunny" size={size} color={color} />,
         }}
       />
@@ -88,7 +90,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarButton: () => null, // Hide this tab completely
+          href: null, // This completely removes the tab from the tab bar
         }}
       />
     </Tabs>
