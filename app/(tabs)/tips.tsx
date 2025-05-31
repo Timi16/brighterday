@@ -16,7 +16,7 @@ type Tip = {
   category: 'mealtime' | 'tantrums' | 'communication' | 'sleep' | 'sensory' | 'selfcare';
   badges: Array<'expert' | 'favorite' | 'quick' | 'new'>;
   content?: string;
-  imageUrl?: string; // Using string for Unsplash image URLs
+  imageUrl?: string;
 };
 
 // Sample tips data with real Unsplash images
@@ -27,7 +27,7 @@ const initialTips: Tip[] = [
     summary: 'Step-by-step guide to creating effective visual schedules for daily routines',
     category: 'communication',
     badges: ['expert', 'favorite'],
-    imageUrl: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=700&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: '2',
@@ -35,7 +35,7 @@ const initialTips: Tip[] = [
     summary: 'Strategies for introducing new foods and creating positive mealtime experiences',
     category: 'mealtime',
     badges: ['favorite'],
-    imageUrl: 'https://images.unsplash.com/photo-1594589350587-0ba707451fad?q=80&w=700&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1609501676725-7186f78b8e9b?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: '3',
@@ -43,7 +43,7 @@ const initialTips: Tip[] = [
     summary: '10 sensory activities to help regulate emotions and reduce stress',
     category: 'sensory',
     badges: ['quick', 'new'],
-    imageUrl: 'https://images.unsplash.com/photo-1619468129361-605ebea04b44?q=80&w=700&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: '4',
@@ -51,7 +51,7 @@ const initialTips: Tip[] = [
     summary: 'How to identify and address common tantrum triggers',
     category: 'tantrums',
     badges: ['expert'],
-    imageUrl: 'https://images.unsplash.com/photo-1553642472-a95441373ef7?q=80&w=700&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: '5',
@@ -59,15 +59,47 @@ const initialTips: Tip[] = [
     summary: 'Create a customized bedtime routine with sensory-friendly options',
     category: 'sleep',
     badges: ['new'],
-    imageUrl: 'https://images.unsplash.com/photo-1520206444322-d2df0dd4e78e?q=80&w=700&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: '6',
     title: 'Self-Care for Parents',
-    summary: 'Quick practices for maintaining your own wellbeing',
+    summary: 'Quick practices for maintaining your own wellbeing while supporting your child',
     category: 'selfcare',
     badges: ['quick'],
-    imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=700&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: '7',
+    title: 'Building Social Communication',
+    summary: 'Simple techniques to encourage social interaction and conversation skills',
+    category: 'communication',
+    badges: ['expert', 'new'],
+    imageUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: '8',
+    title: 'Healthy Snack Ideas',
+    summary: 'Autism-friendly snacks that are both nutritious and appealing',
+    category: 'mealtime',
+    badges: ['quick', 'favorite'],
+    imageUrl: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: '9',
+    title: 'Sensory Room Setup',
+    summary: 'How to create a calming sensory space at home on any budget',
+    category: 'sensory',
+    badges: ['expert'],
+    imageUrl: 'https://images.unsplash.com/photo-1586963925022-bbd9ce3ce976?q=80&w=800&auto=format&fit=crop',
+  },
+  {
+    id: '10',
+    title: 'Transition Strategies',
+    summary: 'Making daily transitions smoother with visual and verbal cues',
+    category: 'communication',
+    badges: ['favorite', 'quick'],
+    imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=800&auto=format&fit=crop',
   },
 ];
 
@@ -85,15 +117,15 @@ const Badge = ({ type }: { type: Tip['badges'][0] }) => {
       label = 'ABA Verified';
       break;
     case 'favorite':
-      backgroundColor = '#FFDB58'; // Sunny yellow
+      backgroundColor = '#FFDB58';
       label = 'Parent Favorite';
       break;
     case 'quick':
-      backgroundColor = '#73C2FB'; // Light blue
+      backgroundColor = '#73C2FB';
       label = 'Quick Read';
       break;
     case 'new':
-      backgroundColor = '#C39BD3'; // Light purple
+      backgroundColor = '#C39BD3';
       label = 'New';
       break;
     default:
@@ -127,38 +159,36 @@ const CategorySelector = ({
   ];
   
   return (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.categorySelector}
-      style={styles.categorySelectorContainer}
-    >
-      {categories.map(category => (
-        <TouchableOpacity
-          key={category.value}
-          style={[
-            styles.categoryButton,
-            selected === category.value && { 
-              backgroundColor: Colors.common.teal,
-              borderColor: Colors.common.teal,
-            }
-          ]}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onSelect(category.value);
-          }}
-        >
-          <ThemedText 
+    <View style={styles.categorySelectorContainer}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categorySelector}
+      >
+        {categories.map(category => (
+          <TouchableOpacity
+            key={category.value}
             style={[
-              styles.categoryButtonText,
-              selected === category.value && { color: '#FFFFFF' }
+              styles.categoryButton,
+              selected === category.value && styles.categoryButtonSelected
             ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onSelect(category.value);
+            }}
           >
-            {category.label}
-          </ThemedText>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+            <ThemedText 
+              style={[
+                styles.categoryButtonText,
+                selected === category.value && styles.categoryButtonTextSelected
+              ]}
+            >
+              {category.label}
+            </ThemedText>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -249,7 +279,7 @@ export default function TipsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF9F0', // Warm white background
+    backgroundColor: '#FFF9F0',
   },
   backgroundPattern: {
     position: 'absolute',
@@ -275,27 +305,40 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
   categorySelectorContainer: {
-    paddingHorizontal: 8,
+    backgroundColor: '#FFF9F0',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   categorySelector: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    alignItems: 'center',
   },
   categoryButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 10,
-    borderWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginRight: 12,
+    borderWidth: 2,
     borderColor: 'rgba(0,0,0,0.1)',
     backgroundColor: 'white',
-    minWidth: 80, // Ensure minimum width for text to display fully
+    minWidth: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 44,
+  },
+  categoryButtonSelected: {
+    backgroundColor: Colors.common.teal,
+    borderColor: Colors.common.teal,
   },
   categoryButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333333',
+    textAlign: 'center',
+  },
+  categoryButtonTextSelected: {
+    color: '#FFFFFF',
   },
   tipsList: {
     padding: 16,
@@ -314,7 +357,7 @@ const styles = StyleSheet.create({
   },
   tipImage: {
     width: '100%',
-    height: 120,
+    height: 140,
     backgroundColor: '#f0f0f0',
   },
   tipContent: {
