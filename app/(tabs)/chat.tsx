@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Platform, 
   StyleSheet, 
@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView, 
   FlatList, 
   View, 
-  StatusBar 
+  StatusBar,
+  ActivityIndicator
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -17,9 +18,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Colors } from '@/constants/Colors';
 import { useAppState } from '@/hooks/useAppState';
+import { useChat } from '@/context/ChatContext';
 
-// Message type definition
-type Message = {
+// Message type definition for display (maps to the ChatContext message format)
+type DisplayMessage = {
   id: string;
   text: string;
   sender: 'user' | 'bot';
@@ -113,7 +115,7 @@ const SunnyAvatar = ({ size = 40 }: { size?: number }) => {
 };
 
 // Message bubble component
-const MessageBubble = ({ message }: { message: Message }) => {
+const MessageBubble = ({ message }: { message: DisplayMessage }) => {
   const isUser = message.sender === 'user';
   
   return (
@@ -153,43 +155,68 @@ const SuggestionButton = ({ suggestion, onPress }: { suggestion: Suggestion, onP
 export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useAppState();
+  const { messages: chatMessages, isLoading, error, sendMessage } = useChat();
   
-  // Generate initial message based on user selections
-  const getInitialMessage = () => {
-    let greeting = "Hi! I'm Sunny, your daily helper. I see you'd like help with following directions. What specific challenges are you facing?";
-    
-    if (state.focusArea) {
-      const focusAreaMap: Record<string, string> = {
-        'meltdowns': 'managing meltdowns',
-        'potty': 'potty training',
-        'communication': 'communication skills',
-        'sleep': 'sleep challenges',
-        'eating': 'picky eating',
-        'directions': 'following directions',
-        'other': 'your specific challenges',
-        'unsure': 'finding the right strategies'
-      };
-      
-      const area = state.focusArea;
-      if (area && focusAreaMap[area]) {
-        greeting = `Hi! I'm Sunny, your daily helper. I see you'd like help with ${focusAreaMap[area]}. What specific challenges are you facing?`;
-      }
-    }
-    
-    return greeting;
-  };
-  
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: getInitialMessage(),
-      sender: 'bot',
-      timestamp: new Date(),
-    },
-  ]);
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const listRef = useRef<FlatList>(null);
+  
+  // Convert chat context messages to display messages
+  const displayMessages: DisplayMessage[] = chatMessages.map((msg: { id: string; text: string; type: string; timestamp: string }) => ({
+    id: msg.id,
+    text: msg.text,
+    sender: msg.type === 'user' ? 'user' : 'bot',
+    timestamp: new Date(msg.timestamp)
+  }));
+  
+  // Update suggestions based on the latest message
+  useEffect(() => {
+    if (displayMessages.length > 1) {
+      const latestMessage = displayMessages[displayMessages.length - 1];
+      if (latestMessage.sender === 'bot') {
+        // Customize suggestions based on message content
+        let newSuggestions = [];
+        const messageText = latestMessage.text.toLowerCase();
+        
+        if (messageText.includes('meltdown')) {
+          newSuggestions = [
+            { id: 'a1', text: 'How do I prevent meltdowns?' },
+            { id: 'a2', text: 'What causes meltdowns?' },
+            { id: 'a3', text: 'Give me a calming technique' },
+          ];
+        } else if (messageText.includes('sleep')) {
+          newSuggestions = [
+            { id: 'b1', text: 'Bedtime routine tips' },
+            { id: 'b2', text: 'Night waking solutions' },
+            { id: 'b3', text: 'Sleep training methods' },
+          ];
+        } else if (messageText.includes('strategies') || messageText.includes('tips')) {
+          newSuggestions = [
+            { id: 'c1', text: 'Tell me more about that' },
+            { id: 'c2', text: 'How do I start?' },
+            { id: 'c3', text: 'Give me an example' },
+          ];
+        } else {
+          newSuggestions = [
+            { id: 'd1', text: 'What do experts recommend?' },
+            { id: 'd2', text: 'Why does this happen?' },
+            { id: 'd3', text: 'How can I be consistent?' },
+          ];
+        }
+        
+        setSuggestions(newSuggestions);
+      }
+    }
+  }, [displayMessages.length]);
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (displayMessages.length > 0) {
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [displayMessages.length]);
   
   // Function to handle sending a message
   const handleSendMessage = (text: string) => {
@@ -198,61 +225,11 @@ export default function ChatScreen() {
     // Haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    // Create new user message
-    const newUserMessage: Message = {
-      id: Date.now().toString(),
-      text,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-    
-    // Add to messages
-    setMessages(prev => [...prev, newUserMessage]);
+    // Send message via chat context (which handles OpenAI API call)
+    sendMessage(text);
     
     // Clear input
     setInput('');
-    
-    // Simulate bot response
-    setTimeout(() => {
-      // Generate response based on user message
-      let botResponseText = "I understand you're asking about that. Let me help you with some practical strategies.";
-      
-      // Simple response logic based on keywords
-      if (text.toLowerCase().includes('meltdown')) {
-        botResponseText = "When your child is having a meltdown, try to stay calm and create a safe space. Remove overwhelming stimuli and offer comfort without pressure. Would you like specific steps to follow during a meltdown?";
-      } else if (text.toLowerCase().includes('sleep')) {
-        botResponseText = "Sleep challenges are common. Establishing a consistent bedtime routine with calming activities can help. Would you like more specific sleep strategies?";
-      } else if (text.toLowerCase().includes('communication')) {
-        botResponseText = "For communication skills, try using visual supports, simple language, and giving your child time to process. Would you like more communication strategies?";
-      } else if (text.toLowerCase().includes('reward')) {
-        botResponseText = "Effective reward systems focus on immediate, meaningful reinforcement. Consider using a visual chart that tracks progress. Would you like examples of reward systems?";
-      }
-      
-      // Create bot response
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: botResponseText,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      
-      // Add to messages
-      setMessages(prev => [...prev, botResponse]);
-      
-      // Update suggestions based on context
-      const newSuggestions = [
-        { id: '5', text: 'Tell me more about that' },
-        { id: '6', text: 'How do I start?' },
-        { id: '7', text: 'Give me an example' },
-      ];
-      
-      setSuggestions(newSuggestions);
-      
-      // Scroll to bottom
-      setTimeout(() => {
-        listRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }, 1000);
   };
   
   // Handle suggestion press
@@ -261,7 +238,7 @@ export default function ChatScreen() {
   };
   
   // Render message item
-  const renderMessageItem = ({ item }: { item: Message }) => (
+  const renderMessageItem = ({ item }: { item: DisplayMessage }) => (
     <MessageBubble message={item} />
   );
 
@@ -297,12 +274,25 @@ export default function ChatScreen() {
 
           <FlatList
             ref={listRef}
-            data={messages}
+            data={displayMessages}
             renderItem={renderMessageItem}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messageList}
             onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           />
+          
+          {isLoading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={Colors.common.teal} />
+              <Text style={styles.loadingText}>Sunny is thinking...</Text>
+            </View>
+          )}
+          
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
           <View style={styles.suggestionsContainer}>
             {suggestions.map((suggestion) => (
@@ -347,6 +337,33 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginBottom: 8,
+  },
+  loadingText: {
+    marginLeft: 8,
+    color: Colors.common.teal,
+    fontSize: 14,
+  },
+  errorContainer: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 200, 200, 0.8)',
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginBottom: 8,
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: 14,
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFF9F0', // Warm white background like in Image 3

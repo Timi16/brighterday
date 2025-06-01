@@ -8,6 +8,7 @@ import { View, ActivityIndicator, Text } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { AppStateProvider } from '@/hooks/useAppState';
+import { ChatProvider } from '@/context/ChatContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -31,13 +32,14 @@ export default function RootLayout() {
 
   return (
     <AppStateProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <View style={{ 
-          flex: 1,
-          backgroundColor: Colors.light.background
-        }}>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-          <Stack
+      <ChatProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <View style={{ 
+            flex: 1,
+            backgroundColor: Colors.light.background
+          }}>
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+            <Stack
           initialRouteName="welcome"
           screenOptions={{
             animation: 'fade',
@@ -60,6 +62,7 @@ export default function RootLayout() {
         </Stack>
         </View>
       </ThemeProvider>
+      </ChatProvider>
     </AppStateProvider>
   );
 }
