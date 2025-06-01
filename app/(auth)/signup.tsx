@@ -366,7 +366,7 @@ export default function SignupScreen() {
   }));
   
   const handleSignup = () => {
-    router.push({ pathname: '/(tabs)' });
+    router.push({ pathname: '/choose-focus' });
   };
   
   const handleGoToLogin = () => {
