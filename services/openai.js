@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 
 // Secure API key handling - in a real production app, use environment variables or a secure vault
 // For development, we'll use a placeholder that should be replaced with your key through environment variables
-const OPENAI_API_KEY = Constants.expoConfig?.extra?.openaiApiKey || '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';
+const OPENAI_API_KEY = Constants.expoConfig?.extra?.openaiApiKey || 'YOUR_API_KEY';
 
 /**
  * Send a message to the OpenAI API
