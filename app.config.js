@@ -1,6 +1,5 @@
 // For Expo Go testing, we'll include the API key directly
 // Remove this and use dotenv for production
-const OPENAI_API_KEY = "";
 export default {
   expo: {
     name: "BrighterDay",
