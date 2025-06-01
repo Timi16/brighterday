@@ -65,7 +65,7 @@ export default function WelcomeScreen() {
   // Handle button actions
   const handleGetStarted = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/choose-focus');
+    router.push('/(auth)/signup');
   };
 
   const handleLearnMore = () => {
