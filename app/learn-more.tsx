@@ -5,7 +5,10 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Dimensions,
-  Platform
+  Platform,
+  Text,
+  SafeAreaView,
+  StatusBar
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -23,10 +26,7 @@ import Animated, {
   FadeInDown
 } from 'react-native-reanimated';
 
-import { ThemedText } from '../components/ThemedText';
-import { ThemedView } from '../components/ThemedView';
 import { Colors } from '../constants/Colors';
-import { useColorScheme } from '../hooks/useColorScheme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,7 +38,6 @@ const SunnyAnimation = ({
   expression?: 'happy' | 'excited' | 'thoughtful', 
   size?: number 
 }) => {
-  const colorScheme = useColorScheme();
   const scale = useSharedValue(0.9);
   const rotation = useSharedValue(0);
   
@@ -80,15 +79,15 @@ const SunnyAnimation = ({
         return (
           <View style={styles.sunFace}>
             <View style={styles.eyesContainer}>
-              <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
-              <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
+              <View style={[styles.eye, { width: size * 0.075, height: size * 0.075 }]} />
+              <View style={[styles.eye, { width: size * 0.075, height: size * 0.075 }]} />
             </View>
             <View style={[
-              styles.smile, 
+              styles.mouth, 
               { 
-                width: size * 0.4, 
-                height: size * 0.25, 
-                borderBottomWidth: 4 
+                width: size * 0.3, 
+                height: size * 0.025,
+                borderRadius: 1,
               }
             ]} />
           </View>
@@ -97,31 +96,32 @@ const SunnyAnimation = ({
         return (
           <View style={styles.sunFace}>
             <View style={styles.eyesContainer}>
-              <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
-              <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
+              <View style={[styles.eye, { width: size * 0.075, height: size * 0.075 }]} />
+              <View style={[styles.eye, { width: size * 0.075, height: size * 0.075 }]} />
             </View>
-            <View style={{ 
-              width: size * 0.3, 
-              height: 4,
-              backgroundColor: '#8B4513',
-              borderRadius: 2,
-              marginTop: size * 0.15
-            }} />
+            <View style={[
+              styles.mouth, 
+              { 
+                width: size * 0.2, 
+                height: size * 0.025,
+                borderRadius: 1,
+              }
+            ]} />
           </View>
         );
       default: // happy
         return (
           <View style={styles.sunFace}>
             <View style={styles.eyesContainer}>
-              <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
-              <View style={[styles.eye, { width: size * 0.1, height: size * 0.1 }]} />
+              <View style={[styles.eye, { width: size * 0.075, height: size * 0.075 }]} />
+              <View style={[styles.eye, { width: size * 0.075, height: size * 0.075 }]} />
             </View>
             <View style={[
-              styles.smile, 
+              styles.mouth, 
               { 
-                width: size * 0.4, 
-                height: size * 0.2, 
-                borderBottomWidth: 3 
+                width: size * 0.2, 
+                height: size * 0.025,
+                borderRadius: 1,
               }
             ]} />
           </View>
@@ -131,11 +131,10 @@ const SunnyAnimation = ({
   
   return (
     <Animated.View style={[styles.sunnyContainer, animatedStyle]}>
-      <View style={[styles.sunCircle, { 
+      <View style={[styles.sunIcon, { 
         width: size, 
         height: size, 
-        borderRadius: size / 2, 
-        backgroundColor: Colors.common.accent 
+        borderRadius: size / 2 
       }]}>
         {/* Sun rays */}
         {Array(12).fill(0).map((_, i) => (
@@ -144,13 +143,11 @@ const SunnyAnimation = ({
             style={[
               styles.sunRay, 
               { 
-                backgroundColor: Colors.common.accent,
                 transform: [{ rotate: `${i * 30}deg` }],
-                width: size * 0.08,
+                width: size * 0.05,
                 height: size * 0.25,
-                top: -size * 0.12,
-                left: size * 0.46,
-                borderRadius: size * 0.04,
+                top: -size * 0.125,
+                left: size * 0.475,
               }
             ]} 
           />
@@ -175,7 +172,6 @@ const FeatureItem = ({
   description: string,
   delay?: number
 }) => {
-  const colorScheme = useColorScheme();
   
   // Get icon based on type
   const getIcon = () => {
@@ -188,7 +184,7 @@ const FeatureItem = ({
             styles.iconContainer, 
             { backgroundColor: Colors.common.primary }
           ]}>
-            <ThemedText style={styles.iconText}>📈</ThemedText>
+            <Text style={styles.iconText}>📈</Text>
           </View>
         );
       case 'tips':
@@ -197,16 +193,16 @@ const FeatureItem = ({
             styles.iconContainer, 
             { backgroundColor: Colors.common.teal }
           ]}>
-            <ThemedText style={styles.iconText}>💡</ThemedText>
+            <Text style={styles.iconText}>💡</Text>
           </View>
         );
       case 'profile':
         return (
           <View style={[
             styles.iconContainer, 
-            { backgroundColor: Colors.common.accent }
+            { backgroundColor: '#FFDB58' }
           ]}>
-            <ThemedText style={styles.iconText}>👤</ThemedText>
+            <Text style={styles.iconText}>👤</Text>
           </View>
         );
     }
@@ -215,22 +211,18 @@ const FeatureItem = ({
   return (
     <Animated.View 
       entering={FadeInDown.delay(delay).springify()}
-      style={[
-        styles.featureItem,
-        { backgroundColor: Colors[colorScheme ?? 'light'].card }
-      ]}
+      style={styles.featureItem}
     >
       {getIcon()}
       <View style={styles.featureContent}>
-        <ThemedText type="subtitle" style={styles.featureTitle}>{title}</ThemedText>
-        <ThemedText style={styles.featureDescription}>{description}</ThemedText>
+        <Text style={styles.featureTitle}>{title}</Text>
+        <Text style={styles.featureDescription}>{description}</Text>
       </View>
     </Animated.View>
   );
 };
 
 export default function LearnMoreScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -245,10 +237,22 @@ export default function LearnMoreScreen() {
   };
   
   return (
-    <ThemedView style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
-      {/* Back button as icon */}
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Background Pattern */}
+      <View style={styles.backgroundPattern}>
+        <Image
+          source={require('../assets/images/sun-pattern.png')}
+          style={styles.patternImage}
+          contentFit="cover"
+          cachePolicy="memory"
+        />
+      </View>
+      
+      {/* Back button */}
       <TouchableOpacity 
-        style={[styles.backButton, { marginTop: insets.top || 20 }]}
+        style={[styles.backButton, { marginTop: insets.top + 20 }]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           handleBack();
@@ -260,121 +264,133 @@ export default function LearnMoreScreen() {
         </View>
       </TouchableOpacity>
       
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent, 
-          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 20 }
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header - Enhanced with better contrast and styling */}
-        <Animated.View 
-          entering={FadeIn.delay(200).duration(800)}
-          style={styles.header}
+      <SafeAreaView style={[styles.content, { paddingTop: insets.top }]}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <View style={styles.logoContainer}>
-            <SunnyAnimation size={100} expression="excited" />
-          </View>
-          <ThemedText type="title" style={styles.title}>About Brighter Days</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            A supportive companion for parents of children with autism
-          </ThemedText>
-        </Animated.View>
-        
-        {/* Mission statement - solid background for better visibility */}
-        <Animated.View 
-          entering={FadeIn.delay(400).duration(800)}
-          style={[styles.missionContainer, { backgroundColor: '#E4F7FF', borderWidth: 1, borderColor: '#BEE6F8' }]}
-        >
-          <ThemedText type="subtitle" style={styles.missionTitle}>Our Mission</ThemedText>
-          <ThemedText style={styles.missionText}>
-            Brighter Days empowers parents with personalized guidance, research-based strategies, and a supportive community to help your child thrive.
-          </ThemedText>
-        </Animated.View>
-        
-        {/* Features */}
-        <ThemedText 
-          type="subtitle" 
-          style={[styles.sectionTitle, { marginTop: 40 }]}
-        >
-          App Features
-        </ThemedText>
-        
-        <View style={styles.featuresContainer}>
-          <FeatureItem
-            icon="chat"
-            title="Chat with Sunny"
-            description="Get personalized strategies and answers to your parenting questions anytime."
-            delay={600}
-          />
-          
-          <FeatureItem
-            icon="progress"
-            title="Progress Tracker"
-            description="Track what works for your child with a visual timeline of strategies and outcomes."
-            delay={700}
-          />
-          
-          <FeatureItem
-            icon="tips"
-            title="Tips & Guides"
-            description="Access expert-verified resources tailored to your child's unique needs."
-            delay={800}
-          />
-          
-          <FeatureItem
-            icon="profile"
-            title="Personalized Profile"
-            description="Customize your experience based on your child's age, interests, and challenges."
-            delay={900}
-          />
-        </View>
-        
-        {/* Testimonial - consistent color scheme */}
-        <Animated.View 
-          entering={FadeIn.delay(1000).duration(800)}
-          style={[styles.testimonialContainer, { backgroundColor: '#E4F7FF', borderWidth: 1, borderColor: '#BEE6F8' }]}
-        >
-          <ThemedText style={styles.testimonialQuote}>
-            "Brighter Days has been a game-changer for our family. The strategies suggested by Sunny helped us transform our morning routine from chaos to calm."
-          </ThemedText>
-          <ThemedText style={styles.testimonialAuthor}>
-            - Jamie, parent of a 6-year-old
-          </ThemedText>
-        </Animated.View>
-        
-        {/* Get Started button - with FREE text to ensure it fits */}
-        <Animated.View
-          entering={FadeIn.delay(1200).duration(800)}
-          style={styles.buttonContainer}
-        >
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#00A3E0' }]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              handleGetStarted();
-            }}
-            activeOpacity={0.7}
+          {/* Header */}
+          <Animated.View 
+            entering={FadeIn.delay(200).duration(800)}
+            style={styles.header}
           >
-            <ThemedText style={styles.buttonText}>Get Started For Free</ThemedText>
-          </TouchableOpacity>
-        </Animated.View>
-      </ScrollView>
-    </ThemedView>
+            <View style={styles.logoContainer}>
+              <SunnyAnimation size={100} expression="excited" />
+            </View>
+            <Text style={styles.welcomeTitle}>About Brighter Days</Text>
+            <Text style={styles.welcomeSubtitle}>
+              A supportive companion for parents of children with autism
+            </Text>
+          </Animated.View>
+          
+          {/* Mission statement */}
+          <Animated.View 
+            entering={FadeIn.delay(400).duration(800)}
+            style={styles.missionContainer}
+          >
+            <Text style={styles.missionTitle}>Our Mission</Text>
+            <Text style={styles.missionText}>
+              Brighter Days empowers parents with personalized guidance, research-based strategies, and a supportive community to help your child thrive.
+            </Text>
+          </Animated.View>
+          
+          {/* Features */}
+          <Text style={styles.sectionTitle}>App Features</Text>
+          
+          <View style={styles.featuresContainer}>
+            <FeatureItem
+              icon="chat"
+              title="Chat with Sunny"
+              description="Get personalized strategies and answers to your parenting questions anytime."
+              delay={600}
+            />
+            
+            <FeatureItem
+              icon="progress"
+              title="Progress Tracker"
+              description="Track what works for your child with a visual timeline of strategies and outcomes."
+              delay={700}
+            />
+            
+            <FeatureItem
+              icon="tips"
+              title="Tips & Guides"
+              description="Access expert-verified resources tailored to your child's unique needs."
+              delay={800}
+            />
+            
+            <FeatureItem
+              icon="profile"
+              title="Personalized Profile"
+              description="Customize your experience based on your child's age, interests, and challenges."
+              delay={900}
+            />
+          </View>
+          
+          {/* Testimonial */}
+          <Animated.View 
+            entering={FadeIn.delay(1000).duration(800)}
+            style={styles.testimonialContainer}
+          >
+            <Text style={styles.testimonialQuote}>
+              "Brighter Days has been a game-changer for our family. The strategies suggested by Sunny helped us transform our morning routine from chaos to calm."
+            </Text>
+            <Text style={styles.testimonialAuthor}>
+              - Jamie, parent of a 6-year-old
+            </Text>
+          </Animated.View>
+          
+          {/* Get Started button */}
+          <Animated.View
+            entering={FadeIn.delay(1200).duration(800)}
+            style={styles.buttonContainer}
+          >
+            <TouchableOpacity
+              style={styles.getStartedButton}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                handleGetStarted();
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.getStartedButtonText}>Get Started For Free</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF9F0', // Same warm white background as welcome
+  },
+  backgroundPattern: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.15, // Same pattern opacity as welcome
+    zIndex: -1,
+  },
+  patternImage: {
+    width: '100%',
+    height: '100%',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
+    paddingTop: 60, // Space for back button
+    paddingBottom: 20,
   },
   backButton: {
     position: 'absolute',
@@ -382,15 +398,18 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 10,
     padding: 10,
-    backgroundColor: '#00A3E0',
+    backgroundColor: Colors.common.teal,
     borderRadius: 25,
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
   },
@@ -423,43 +442,46 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   logoContainer: {
-    backgroundColor: '#FFECB3',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: 16,
+    justifyContent: 'center',
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
+  welcomeTitle: {
+    fontSize: 36,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 16,
+    color: '#333333',
+    width: '100%',
   },
-  subtitle: {
-    fontSize: 16,
+  welcomeSubtitle: {
+    fontSize: 18,
     textAlign: 'center',
-    color: '#333333', // Dark color for better contrast instead of opacity
-    fontWeight: '500',
-    maxWidth: '90%',
+    color: '#555555',
+    paddingHorizontal: 20,
+    width: '100%',
   },
   missionContainer: {
     padding: 20,
     borderRadius: 16,
-    marginTop: 24,
+    marginBottom: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 163, 224, 0.2)',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   missionTitle: {
     marginBottom: 8,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0078A7',
+    color: Colors.common.teal,
   },
   missionText: {
     lineHeight: 22,
@@ -468,21 +490,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
     marginBottom: 16,
+    color: '#333333',
   },
   featuresContainer: {
     gap: 16,
+    marginBottom: 32,
   },
   featureItem: {
     flexDirection: 'row',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: '#F0F9FF',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderWidth: 1,
-    borderColor: '#BEE6F8',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    borderColor: 'rgba(0, 163, 224, 0.2)',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
@@ -505,7 +534,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#0078A7',
+    color: Colors.common.teal,
   },
   featureDescription: {
     fontSize: 14,
@@ -516,10 +545,15 @@ const styles = StyleSheet.create({
   testimonialContainer: {
     padding: 20,
     borderRadius: 12,
-    marginTop: 32,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 163, 224, 0.2)',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
@@ -535,69 +569,65 @@ const styles = StyleSheet.create({
   testimonialAuthor: {
     fontWeight: 'bold',
     textAlign: 'right',
-    color: '#0078A7',
+    color: Colors.common.teal,
   },
   buttonContainer: {
     marginTop: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 4,
-    width: '100%',
-    paddingHorizontal: 0,
   },
-  button: {
-    height: 52,
-    borderRadius: 10,
-    justifyContent: 'center',
+  getStartedButton: {
+    backgroundColor: Colors.common.teal,
+    paddingVertical: 16,
+    borderRadius: 30,
     alignItems: 'center',
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    justifyContent: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 3,
-    width: '100%',
   },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  getStartedButtonText: {
+    color: 'white',
+    fontSize: 18,
     fontWeight: 'bold',
-    letterSpacing: 0.5,
   },
   sunnyContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sunCircle: {
-    position: 'relative',
+  sunIcon: {
+    backgroundColor: '#FFDB58', // Same yellow color as welcome
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   sunRay: {
     position: 'absolute',
+    backgroundColor: '#FFDB58', // Match sun color
+    borderRadius: 2,
   },
   sunFace: {
-    width: '100%',
-    height: '100%',
+    width: '60%',
+    height: '60%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   eyesContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '50%',
-    marginBottom: 10,
+    justifyContent: 'space-between',
+    width: '60%',
+    marginBottom: 8,
   },
   eye: {
-    borderRadius: 5,
-    backgroundColor: '#8B4513',
+    borderRadius: 3,
+    backgroundColor: '#8B4513', // Brown eyes like welcome
   },
-  smile: {
-    borderBottomWidth: 3,
-    borderBottomColor: '#8B4513',
-    borderRadius: 10,
+  mouth: {
+    backgroundColor: '#8B4513', // Brown mouth like welcome
+    borderRadius: 1,
   },
 });
