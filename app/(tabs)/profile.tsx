@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Switch, Platform, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, View, TouchableOpacity, Switch, Platform, Alert, TextInput, Modal, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
 
 // Child profile type
 type ChildProfile = {
@@ -15,15 +17,6 @@ type ChildProfile = {
   age: number;
   interests: string[];
   challenges: string[];
-};
-
-// Sample child profile
-const initialChildProfile: ChildProfile = {
-  id: '1',
-  name: 'Alex',
-  age: 5,
-  interests: ['Dinosaurs', 'Building blocks', 'Water play'],
-  challenges: ['Food selectivity', 'Transitions', 'Sleep disruption'],
 };
 
 // Setting type
@@ -167,28 +160,225 @@ const ChildProfileCard = ({ profile, onEdit }: { profile: ChildProfile, onEdit: 
   );
 };
 
+// Child profile form component
+const ChildProfileForm = ({ 
+  visible, 
+  initialData, 
+  onSave, 
+  onCancel 
+}: { 
+  visible: boolean, 
+  initialData?: Partial<ChildProfile>, 
+  onSave: (data: Partial<ChildProfile>) => void, 
+  onCancel: () => void 
+}) => {
+  const [name, setName] = useState(initialData?.name || '');
+  const [age, setAge] = useState(initialData?.age?.toString() || '');
+  const [interests, setInterests] = useState(initialData?.interests?.join(', ') || '');
+  const [challenges, setChallenges] = useState(initialData?.challenges?.join(', ') || '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSave = () => {
+    setIsSubmitting(true);
+    // Convert interests and challenges to arrays
+    const interestsArray = interests.split(',').map(i => i.trim()).filter(i => i);
+    const challengesArray = challenges.split(',').map(c => c.trim()).filter(c => c);
+    
+    // Create child profile data
+    const childData: Partial<ChildProfile> = {
+      name,
+      age: parseInt(age) || 0,
+      interests: interestsArray,
+      challenges: challengesArray
+    };
+    
+    onSave(childData);
+    setIsSubmitting(false);
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <ThemedText style={styles.modalTitle}>
+            {initialData?.id ? 'Update Child Profile' : 'Add Child Profile'}
+          </ThemedText>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Name</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Child's name"
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Age</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={age}
+              onChangeText={setAge}
+              placeholder="Child's age"
+              keyboardType="number-pad"
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Interests (comma separated)</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={interests}
+              onChangeText={setInterests}
+              placeholder="Dinosaurs, Building blocks, etc."
+            />
+          </View>
+          
+          <View style={styles.formGroup}>
+            <ThemedText style={styles.label}>Challenges (comma separated)</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={challenges}
+              onChangeText={setChallenges}
+              placeholder="Sleep, Transitions, etc."
+            />
+          </View>
+          
+          <View style={styles.modalButtons}>
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={onCancel}
+            >
+              <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.modalButton, styles.saveButton]}
+              onPress={handleSave}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <ThemedText style={styles.buttonText}>Save</ThemedText>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const [childProfile, setChildProfile] = useState<ChildProfile>(initialChildProfile);
+  const { user, userProfile, logout, updateProfile } = useSupabaseAuth();
+  const [childProfile, setChildProfile] = useState<ChildProfile | null>(null);
   const [settings, setSettings] = useState<Setting[]>(initialSettings);
+  const [showChildForm, setShowChildForm] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Handle setting toggle
-  const handleToggleSetting = (id: string, enabled: boolean) => {
-    setSettings(settings.map(setting => 
+  // Load profile data when component mounts
+  useEffect(() => {
+    if (userProfile) {
+      // If user has child data in profile, use it
+      if (userProfile.childProfile) {
+        try {
+          const parsedChildProfile = typeof userProfile.childProfile === 'string' 
+            ? JSON.parse(userProfile.childProfile) 
+            : userProfile.childProfile;
+          
+          setChildProfile(parsedChildProfile);
+        } catch (e) {
+          console.error('Error parsing child profile:', e);
+        }
+      }
+      
+      // Load user settings if available
+      if (userProfile.settings) {
+        try {
+          const parsedSettings = typeof userProfile.settings === 'string'
+            ? JSON.parse(userProfile.settings)
+            : userProfile.settings;
+            
+          if (Array.isArray(parsedSettings)) {
+            setSettings(parsedSettings);
+          }
+        } catch (e) {
+          console.error('Error parsing settings:', e);
+        }
+      }
+      
+      setLoading(false);
+    }
+  }, [userProfile]);
+
+  // Handle setting toggle and save to database
+  const handleToggleSetting = async (id: string, enabled: boolean) => {
+    const updatedSettings = settings.map(setting => 
       setting.id === id ? { ...setting, enabled } : setting
-    ));
+    );
+    
+    setSettings(updatedSettings);
+    
+    // Save settings to Supabase
+    if (user) {
+      try {
+        await updateProfile({
+          settings: JSON.stringify(updatedSettings)
+        });
+      } catch (e) {
+        console.error('Error saving settings:', e);
+      }
+    }
+  };
+
+  // Handle child profile form submission
+  const handleSaveChildProfile = async (data: Partial<ChildProfile>) => {
+    const newChildProfile: ChildProfile = {
+      id: childProfile?.id || '1',
+      name: data.name || 'Child',
+      age: data.age || 0,
+      interests: data.interests || [],
+      challenges: data.challenges || []
+    };
+    
+    setChildProfile(newChildProfile);
+    setShowChildForm(false);
+    
+    // Save to Supabase
+    if (user) {
+      try {
+        await updateProfile({
+          childProfile: JSON.stringify(newChildProfile)
+        });
+        Alert.alert('Success', 'Child profile saved successfully');
+      } catch (e) {
+        console.error('Error saving child profile:', e);
+        Alert.alert('Error', 'There was an error saving the child profile');
+      }
+    }
   };
 
   // Handle edit profile
   const handleEditProfile = () => {
-    // In a real app, this would navigate to a profile edit screen
-    Alert.alert('Edit Profile', 'This would open the profile editor');
+    setShowChildForm(true);
   };
 
   // Handle sign out
-  const handleSignOut = () => {
-    // In a real app, this would sign the user out
-    Alert.alert('Sign Out', 'This would sign you out');
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      Alert.alert('Error', 'There was an error signing out');
+    }
   };
 
   return (
@@ -215,8 +405,30 @@ export default function ProfileScreen() {
       >
         {/* Child Profile */}
         <ProfileSection title="Child Information">
-          <ChildProfileCard profile={childProfile} onEdit={handleEditProfile} />
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.light.primary} />
+            </View>
+          ) : childProfile ? (
+            <ChildProfileCard profile={childProfile} onEdit={handleEditProfile} />
+          ) : (
+            <TouchableOpacity 
+              style={styles.addChildButton}
+              onPress={() => setShowChildForm(true)}
+            >
+              <Ionicons name="add-circle-outline" size={24} color={Colors.light.primary} />
+              <ThemedText style={styles.addChildText}>Add Child Information</ThemedText>
+            </TouchableOpacity>
+          )}
         </ProfileSection>
+        
+        {/* Child Profile Form */}
+        <ChildProfileForm 
+          visible={showChildForm} 
+          initialData={childProfile || undefined} 
+          onSave={handleSaveChildProfile} 
+          onCancel={() => setShowChildForm(false)} 
+        />
         
         {/* Notification Settings */}
         <ProfileSection title="Notifications">
@@ -442,5 +654,94 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addChildButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.light.background,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  addChildText: {
+    marginLeft: 8,
+    color: Colors.light.primary,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 500,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+    color: Colors.light.text,
+  },
+  formGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    marginBottom: 8,
+    fontWeight: '500',
+    fontSize: 14,
+    color: Colors.light.text,
+  },
+  input: {
+    backgroundColor: '#F5F5F5',
+    padding: 12,
+    borderRadius: 8,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  saveButton: {
+    backgroundColor: Colors.light.primary,
+  },
+  cancelButton: {
+    backgroundColor: '#EEEEEE',
+  },
+  buttonText: {
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
