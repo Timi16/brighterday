@@ -97,13 +97,32 @@ export default function PersonalizeScreen() {
         
         // Store the personalization data in Supabase if user is logged in
         if (user) {
-          const { error } = await updateProfile({
+          // First check if the profile exists by directly checking userProfile
+          const isNewProfile = !userProfile || !userProfile.id;
+          
+          // Prepare profile data
+          const profileData = {
             childAge,
             firstTime,
             feeling,
             personalization_completed: true,
-            personalization_date: new Date().toISOString()
-          });
+            personalization_date: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          // If this is a new profile, add required fields
+          if (isNewProfile) {
+            console.log('Creating new profile during personalization');
+            Object.assign(profileData, {
+              id: user.id,
+              email: user.email,
+              name: user.user_metadata?.name || 'User',
+              created_at: new Date().toISOString()
+            });
+          }
+          
+          // Try to update or create the profile
+          const { error } = await updateProfile(profileData);
           
           if (error) {
             console.error('Error updating profile:', error);

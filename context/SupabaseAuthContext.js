@@ -96,7 +96,31 @@ export const SupabaseAuthProvider = ({ children }) => {
       
       if (error) {
         console.error('Error fetching user profile:', error);
+        
+        // If profile doesn't exist, create a simple one
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating basic profile');
+          
+          // Create basic profile with minimal fields
+          const basicProfile = {
+            id: userId,
+            created_at: new Date().toISOString()
+          };
+          
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert(basicProfile);
+          
+          if (insertError) {
+            console.error('Failed to create basic profile:', insertError);
+          } else {
+            // Set basic profile
+            setUserProfile(basicProfile);
+            await AsyncStorage.setItem('userProfile', JSON.stringify(basicProfile));
+          }
+        }
       } else if (profile) {
+        console.log('Profile loaded successfully:', profile.id);
         setUserProfile(profile);
         await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
       }
@@ -125,26 +149,27 @@ export const SupabaseAuthProvider = ({ children }) => {
         return { error };
       }
       
-      // If signup successful, create a profile record
+      // If signup successful, don't try to create a profile yet
+      // We'll do that on first login or when personalizing
       if (data?.user) {
-        // Create a user profile in the profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            id: data.user.id,
-            name,
-            email,
-            created_at: new Date().toISOString(),
-          });
-        
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-          setAuthError('Account created but there was an issue setting up your profile');
-          return { error: profileError };
-        }
-        
         // Set user in state
         setUser(data.user);
+        
+        // Create a basic local profile for immediate use
+        const initialProfile = {
+          id: data.user.id,
+          email: email,
+          name: name,
+          created_at: new Date().toISOString()
+        };
+        
+        // Store locally first
+        setUserProfile(initialProfile);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(initialProfile));
+        
+        // We'll create the actual profile when the user completes the personalization step
+        console.log('User created, profile will be created during personalization');
+        
         return { user: data.user };
       }
     } catch (error) {
@@ -254,24 +279,61 @@ export const SupabaseAuthProvider = ({ children }) => {
       setLoading(true);
       setAuthError(null);
       
-      // Use Supabase client directly to update profile
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
+      // Check if we need to create a new profile or update existing one
+      const isNewProfile = updates.id && updates.created_at;
+      let result;
+      
+      if (isNewProfile) {
+        // This is a new profile creation
+        console.log('Creating new profile via upsert');
+        result = await supabase
+          .from('profiles')
+          .upsert(updates, { onConflict: 'id', ignoreDuplicates: false })
+          .select();
+      } else {
+        // Ensure we have an ID field
+        if (!updates.id) {
+          updates.id = user.id;
+        }
+        
+        // Add updated_at timestamp
+        if (!updates.updated_at) {
+          updates.updated_at = new Date().toISOString();
+        }
+        
+        // This is an update to existing profile
+        console.log('Updating existing profile');
+        result = await supabase
+          .from('profiles')
+          .upsert(updates, { onConflict: 'id', ignoreDuplicates: false })
+          .select();
+      }
+      
+      const { data, error } = result;
       
       if (error) {
+        console.error('Profile update/create error:', error);
         setAuthError(error.message);
         return { error };
       }
       
       // Update local profile state
       if (data?.[0]) {
-        setUserProfile({...userProfile, ...data[0]});
-        await AsyncStorage.setItem('userProfile', JSON.stringify({...userProfile, ...data[0]}));
-        return { profile: data[0] };
+        const updatedProfile = {...(userProfile || {}), ...data[0]};
+        setUserProfile(updatedProfile);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+        console.log('Profile updated successfully');
+        return { profile: updatedProfile };
+      } else if (data) {
+        // Some versions of Supabase might not return an array
+        const updatedProfile = {...(userProfile || {}), ...data};
+        setUserProfile(updatedProfile);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+        console.log('Profile updated successfully (non-array response)');
+        return { profile: updatedProfile };
       }
+      
+      return { error: 'Failed to update profile - no data returned' };
     } catch (error) {
       console.error('Unexpected error in updateProfile:', error);
       setAuthError(error.message);
