@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Platform, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, View, TouchableOpacity, Platform, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
 
 // Strategy type definition
 type Strategy = {
@@ -270,18 +271,79 @@ const AddStrategyModal = ({
 
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
-  const [strategies, setStrategies] = useState<Strategy[]>(initialStrategies);
+  const { user, userProfile, updateProfile } = useSupabaseAuth();
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Load strategies from user profile when component mounts
+  useEffect(() => {
+    if (userProfile) {
+      loadStrategies();
+    } else {
+      setLoading(false);
+    }
+  }, [userProfile]);
+  
+  // Load strategies from user profile
+  const loadStrategies = () => {
+    setLoading(true);
+    try {
+      if (userProfile?.strategies) {
+        let savedStrategies;
+        if (typeof userProfile.strategies === 'string') {
+          savedStrategies = JSON.parse(userProfile.strategies);
+        } else {
+          savedStrategies = userProfile.strategies;
+        }
+        
+        // Convert string dates back to Date objects
+        if (Array.isArray(savedStrategies)) {
+          const processedStrategies = savedStrategies.map(s => ({
+            ...s,
+            dateAdded: new Date(s.dateAdded)
+          }));
+          
+          setStrategies(processedStrategies);
+        }
+      } else {
+        // No strategies in profile, use sample data for new users
+        setStrategies(initialStrategies);
+      }
+    } catch (e) {
+      console.error('Error loading strategies:', e);
+      // Fallback to initial strategies on error
+      setStrategies(initialStrategies);
+    }
+    setLoading(false);
+  };
 
   // Handle adding a new strategy
-  const handleAddStrategy = (newStrategyData: Omit<Strategy, 'id' | 'dateAdded'>) => {
+  const handleAddStrategy = async (newStrategyData: Omit<Strategy, 'id' | 'dateAdded'>) => {
+    // Create new strategy object
     const newStrategy: Strategy = {
       ...newStrategyData,
       id: Date.now().toString(),
       dateAdded: new Date()
     };
 
-    setStrategies([newStrategy, ...strategies]);
+    // Update local state
+    const updatedStrategies = [newStrategy, ...strategies];
+    setStrategies(updatedStrategies);
+    
+    // Save to Supabase
+    if (user) {
+      try {
+        await updateProfile({
+          strategies: JSON.stringify(updatedStrategies)
+        });
+        // Success feedback
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch (e) {
+        console.error('Error saving strategy:', e);
+        Alert.alert('Error', 'There was an error saving your strategy, but it was added locally');
+      }
+    }
   };
 
   return (
@@ -307,16 +369,28 @@ export default function ProgressScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Timeline */}
-        <View style={styles.timeline}>
-          {strategies.map((strategy, index) => (
-            <React.Fragment key={strategy.id}>
-              <StrategyCard strategy={strategy} />
-              {index < strategies.length - 1 && (
-                <View style={styles.timelineLine} />
-              )}
-            </React.Fragment>
-          ))}
-        </View>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.light.primary} />
+          </View>
+        ) : strategies.length > 0 ? (
+          <View style={styles.timeline}>
+            {strategies.map((strategy, index) => (
+              <React.Fragment key={strategy.id}>
+                <StrategyCard strategy={strategy} />
+                {index < strategies.length - 1 && (
+                  <View style={styles.timelineLine} />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
+        ) : (
+          <View style={styles.emptyState}>
+            <ThemedText style={styles.emptyStateText}>
+              No strategies yet. Add your first strategy below!
+            </ThemedText>
+          </View>
+        )}
 
         {/* Add new strategy button */}
         <TouchableOpacity 
@@ -341,6 +415,23 @@ export default function ProgressScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: Colors.light.text,
+    opacity: 0.7,
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFF9F0', // Warm white background
