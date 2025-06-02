@@ -1,3 +1,7 @@
+// Import polyfills first
+import '../polyfills';
+
+
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -9,6 +13,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { AppStateProvider } from '@/hooks/useAppState';
 import { ChatProvider } from '@/context/ChatContext';
+import { SupabaseAuthProvider } from '@/context/SupabaseAuthContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -32,8 +37,9 @@ export default function RootLayout() {
 
   return (
     <AppStateProvider>
-      <ChatProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <SupabaseAuthProvider>
+        <ChatProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <View style={{ 
             flex: 1,
             backgroundColor: Colors.light.background
@@ -59,10 +65,11 @@ export default function RootLayout() {
           <Stack.Screen name="welcome" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
-        </Stack>
+          </Stack>
         </View>
       </ThemeProvider>
-      </ChatProvider>
-    </AppStateProvider>
+    </ChatProvider>
+  </SupabaseAuthProvider>
+  </AppStateProvider>
   );
 }
