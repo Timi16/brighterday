@@ -100,8 +100,9 @@ export default function PersonalizeScreen() {
           // First check if the profile exists by directly checking userProfile
           const isNewProfile = !userProfile || !userProfile.id;
           
-          // Prepare profile data
+          // Prepare profile data with personalization info
           const profileData = {
+            ...userProfile,
             childAge,
             firstTime,
             feeling,
@@ -122,13 +123,15 @@ export default function PersonalizeScreen() {
           }
           
           // Try to update or create the profile
-          const { error } = await updateProfile(profileData);
+          const { error, profile } = await updateProfile(profileData);
           
           if (error) {
-            console.error('Error updating profile:', error);
-            setError('Failed to save your preferences. Please try again.');
-            setIsSubmitting(false);
-            return;
+            // Log the error but continue the user flow
+            console.error('Error updating profile but continuing:', error);
+            
+            // Don't block the user experience for database issues
+            // Just show a toast or small notification if you have one
+            console.log('Continuing with local profile:', profile);
           }
         }
         

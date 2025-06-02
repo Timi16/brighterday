@@ -21,26 +21,57 @@ export const SupabaseAuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Initialize: check for existing session on mount
   useEffect(() => {
-    checkUser();
+    const checkUserAndRedirect = async () => {
+      try {
+        // Check if user is logged in
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+        
+        if (session?.user) {
+          // User is logged in, first load their profile
+          await fetchUserProfile(session.user.id);
+          
+          // Check if they've completed personalization
+          const storedProfile = await AsyncStorage.getItem('userProfile');
+          if (storedProfile) {
+            const profile = JSON.parse(storedProfile);
+            
+            if (profile.personalization_completed) {
+              console.log('User has already completed personalization, redirecting to meet-sunny');
+              // Add a small delay to ensure the app is ready for navigation
+              setTimeout(() => {
+                router.replace('/meet-sunny');
+              }, 500);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error in checking user and redirect:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkUserAndRedirect();
     
     // Set up auth state change listener using the Supabase client
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setUser(session?.user || null);
-          if (session?.user) {
-            fetchUserProfile(session.user.id);
-          }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setUserProfile(null);
-          await AsyncStorage.removeItem('userProfile');
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        setUserProfile(null);
+        // Clear local storage
+        AsyncStorage.removeItem('userProfile').catch(err => {
+          console.error('Error removing profile from storage:', err);
+        });
       }
-    );
+    });
 
     // Cleanup listener on unmount
     return () => {
@@ -78,54 +109,131 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  // Fetch user profile from Supabase
+  // Fetch user profile data - CLIENT FIRST APPROACH
   const fetchUserProfile = async (userId) => {
     try {
-      // Try to get from local storage first for faster loading
-      const storedProfile = await AsyncStorage.getItem('userProfile');
-      if (storedProfile) {
-        setUserProfile(JSON.parse(storedProfile));
+      if (!userId) {
+        console.log('No userId provided to fetchUserProfile');
+        return { error: 'No userId provided' };
       }
-
-      // Then fetch from Supabase to ensure we have latest data
-      const { data: profile, error } = await supabase
+      
+      // Try loading from local storage first (this is our primary source of truth)
+      let localProfile = null;
+      try {
+        const cachedProfile = await AsyncStorage.getItem('userProfile');
+        if (cachedProfile) {
+          localProfile = JSON.parse(cachedProfile);
+          console.log('Loaded profile from local storage');
+          setUserProfile(localProfile);
+          
+          // If we have a local profile already, we can return it immediately
+          // and perform the database check in the background
+          if (localProfile) {
+            // We already have profile data, so schedule a background check but return immediately
+            setTimeout(() => {
+              // Try to sync with server in the background
+              syncProfileWithServer(userId, localProfile).catch(err => {
+                console.log('Background profile sync error (non-blocking):', err);
+              });
+            }, 100);
+            
+            return { profile: localProfile };
+          }
+        }
+      } catch (cacheError) {
+        console.error('Error loading cached profile:', cacheError);
+      }
+      
+      // If we get here, we don't have a local profile, so create one and try to sync
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (userData?.user) {
+        // Create the local profile first
+        const newProfile = {
+          id: userData.user.id,
+          email: userData.user.email,
+          name: userData.user.user_metadata?.name || 'User',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        
+        // Update local profile immediately
+        setUserProfile(newProfile);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(newProfile));
+        
+        // Try to sync with server in background
+        syncProfileWithServer(userId, newProfile).catch(err => {
+          console.log('New profile sync error (non-blocking):', err);
+        });
+        
+        return { profile: newProfile };
+      }
+      
+      return { error: 'Could not get user data', profile: localProfile || {} };
+    } catch (error) {
+      console.error('Unexpected error in fetchUserProfile:', error);
+      return { error, profile: {} };
+    }
+  };
+  
+  // Helper function for background sync attempts
+  const syncProfileWithServer = async (userId, localProfile) => {
+    console.log('Attempting to sync profile with server');
+    
+    try {
+      // First try to get the server profile
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors
       
       if (error) {
-        console.error('Error fetching user profile:', error);
+        console.log('Server profile retrieval error:', error);
         
-        // If profile doesn't exist, create a simple one
-        if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating basic profile');
+        // Try to create minimal profile
+        const minimalProfile = {
+          id: userId,
+          email: localProfile.email,
+          updated_at: new Date().toISOString()
+        };
+        
+        await supabase
+          .from('profiles')
+          .insert([minimalProfile]);
           
-          // Create basic profile with minimal fields
-          const basicProfile = {
-            id: userId,
-            created_at: new Date().toISOString()
-          };
-          
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert(basicProfile);
-          
-          if (insertError) {
-            console.error('Failed to create basic profile:', insertError);
-          } else {
-            // Set basic profile
-            setUserProfile(basicProfile);
-            await AsyncStorage.setItem('userProfile', JSON.stringify(basicProfile));
-          }
-        }
-      } else if (profile) {
-        console.log('Profile loaded successfully:', profile.id);
-        setUserProfile(profile);
-        await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
+        console.log('Attempted to create minimal profile on server');
       }
-    } catch (error) {
-      console.error('Unexpected error in fetchUserProfile:', error);
+      else if (data) {
+        // We have both local and server data - merge and update both
+        console.log('Retrieved server profile, merging with local');
+        
+        // Prefer local data for most fields but keep server timestamps if newer
+        const serverDate = data.updated_at ? new Date(data.updated_at) : new Date(0);
+        const localDate = localProfile.updated_at ? new Date(localProfile.updated_at) : new Date();
+        
+        const mergedProfile = { ...data, ...localProfile };
+        
+        // Only update server if local is newer
+        if (localDate > serverDate) {
+          console.log('Local profile is newer, updating server');
+          await supabase
+            .from('profiles')
+            .update({
+              email: mergedProfile.email,
+              name: mergedProfile.name,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+        }
+        
+        // Always update local with merged data
+        setUserProfile(mergedProfile);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(mergedProfile));
+      }
+    } catch (syncError) {
+      console.log('Profile sync error:', syncError);
+      // Non-blocking - we continue with local profile
     }
   };
 
@@ -268,7 +376,7 @@ export const SupabaseAuthProvider = ({ children }) => {
     }
   };
 
-  // Update user profile
+  // Update user profile - LOCAL FIRST APPROACH
   const updateProfile = async (updates) => {
     try {
       if (!user) {
@@ -279,65 +387,72 @@ export const SupabaseAuthProvider = ({ children }) => {
       setLoading(true);
       setAuthError(null);
       
-      // Check if we need to create a new profile or update existing one
-      const isNewProfile = updates.id && updates.created_at;
-      let result;
+      // Create a merged profile 
+      const currentProfile = userProfile || {};
+      const updatedProfile = { 
+        ...currentProfile,
+        ...updates,
+        id: user.id, 
+        updated_at: new Date().toISOString()
+      };
       
-      if (isNewProfile) {
-        // This is a new profile creation
-        console.log('Creating new profile via upsert');
-        result = await supabase
+      // If this is the first time saving, add created_at
+      if (!currentProfile.created_at) {
+        updatedProfile.created_at = new Date().toISOString();
+      }
+      
+      // Always update local storage first (client-first approach)
+      console.log('Updating local profile');
+      setUserProfile(updatedProfile);
+      await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      
+      // Try to update the database, but don't block on it
+      console.log('Attempting to sync with database');
+      
+      try {
+        // Try creating a minimal profile record first
+        const minimalProfile = {
+          id: user.id,
+          email: user.email || updatedProfile.email,
+          updated_at: new Date().toISOString()
+        };
+        
+        // First approach: Just try to insert the minimal data to create the record
+        const { error: insertError } = await supabase
           .from('profiles')
-          .upsert(updates, { onConflict: 'id', ignoreDuplicates: false })
-          .select();
-      } else {
-        // Ensure we have an ID field
-        if (!updates.id) {
-          updates.id = user.id;
+          .insert([minimalProfile]);
+        
+        if (!insertError) {
+          console.log('Successfully created minimal profile');
         }
         
-        // Add updated_at timestamp
-        if (!updates.updated_at) {
-          updates.updated_at = new Date().toISOString();
-        }
-        
-        // This is an update to existing profile
-        console.log('Updating existing profile');
-        result = await supabase
+        // Second approach: Try to update the most important fields only
+        const { error: updateError } = await supabase
           .from('profiles')
-          .upsert(updates, { onConflict: 'id', ignoreDuplicates: false })
-          .select();
+          .update({
+            email: user.email || updatedProfile.email,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+        
+        if (!updateError) {
+          console.log('Successfully updated basic profile info');
+        }
+      } catch (dbError) {
+        console.log('Non-blocking database error:', dbError);
+        // This is intentionally non-blocking
       }
       
-      const { data, error } = result;
-      
-      if (error) {
-        console.error('Profile update/create error:', error);
-        setAuthError(error.message);
-        return { error };
-      }
-      
-      // Update local profile state
-      if (data?.[0]) {
-        const updatedProfile = {...(userProfile || {}), ...data[0]};
-        setUserProfile(updatedProfile);
-        await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-        console.log('Profile updated successfully');
-        return { profile: updatedProfile };
-      } else if (data) {
-        // Some versions of Supabase might not return an array
-        const updatedProfile = {...(userProfile || {}), ...data};
-        setUserProfile(updatedProfile);
-        await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-        console.log('Profile updated successfully (non-array response)');
-        return { profile: updatedProfile };
-      }
-      
-      return { error: 'Failed to update profile - no data returned' };
+      // Return the updated profile regardless of database success
+      return { profile: updatedProfile };
     } catch (error) {
       console.error('Unexpected error in updateProfile:', error);
-      setAuthError(error.message);
-      return { error };
+      
+      // Still return whatever profile we have
+      return { 
+        error: error.message || 'Unknown error updating profile', 
+        profile: userProfile || {}
+      };
     } finally {
       setLoading(false);
     }
