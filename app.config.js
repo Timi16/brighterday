@@ -41,7 +41,7 @@ export default {
       openaiApiKey: OPENAI_API_KEY,
       supabaseKey: SUPABASE_KEY,
       eas: {
-        projectId: "your-project-id"
+        projectId: "9ec867e0-d654-46ee-9856-3f3c694c83ca"
       }
     }
   }
