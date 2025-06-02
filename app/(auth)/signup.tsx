@@ -7,7 +7,9 @@ import {
   KeyboardAvoidingView, 
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -28,6 +30,7 @@ import { ThemedView } from '../../components/ThemedView';
 import { CleanHeader } from '../../components/CleanHeader';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
+import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -345,12 +348,16 @@ const SunnyIcon = ({ size = 80 }: { size?: number }) => {
 };
 
 export default function SignupScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const { signup, authError, loading } = useSupabaseAuth();
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   
   const containerOpacity = useSharedValue(0);
   const containerTranslateY = useSharedValue(20);
@@ -360,17 +367,72 @@ export default function SignupScreen() {
     containerTranslateY.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) });
   }, []);
   
+  // Watch for authentication errors
+  useEffect(() => {
+    if (authError) {
+      setErrorMsg(authError);
+      setIsSubmitting(false);
+    }
+  }, [authError]);
+  
   const containerStyle = useAnimatedStyle(() => ({
     opacity: containerOpacity.value,
     transform: [{ translateY: containerTranslateY.value }]
   }));
   
-  const handleSignup = () => {
-    router.push({ pathname: '/choose-focus' });
+  const validateForm = () => {
+    if (!name.trim()) {
+      setErrorMsg('Please enter your name');
+      return false;
+    }
+    if (!email.trim()) {
+      setErrorMsg('Please enter your email');
+      return false;
+    }
+    if (!password) {
+      setErrorMsg('Please enter a password');
+      return false;
+    }
+    if (password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters');
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match');
+      return false;
+    }
+    return true;
+  };
+  
+  const handleSignup = async () => {
+    if (!validateForm()) return;
+    
+    try {
+      setIsSubmitting(true);
+      setErrorMsg('');
+      
+      const { user, error } = await signup(email, password, name);
+      
+      if (error) {
+        setErrorMsg(error.message || 'Signup failed');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (user) {
+        // Signup successful, navigate to personalize screen
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.push('/personalize');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      setErrorMsg('An unexpected error occurred');
+      setIsSubmitting(false);
+    }
   };
   
   const handleGoToLogin = () => {
-    router.push({ pathname: '/(auth)/login' });
+    router.push('/(auth)/login');
   };
   
   return (
@@ -427,10 +489,13 @@ export default function SignupScreen() {
             {/* Form */}
             <View style={styles.form}>
               <AnimatedInputField
-                label="Full Name"
-                placeholder="Enter your full name"
+                label="Name"
+                placeholder="Enter your name"
                 value={name}
-                onChangeText={setName}
+                onChangeText={(text) => {
+                  setName(text);
+                  setErrorMsg('');
+                }}
                 autoCapitalize="words"
                 delay={200}
               />
@@ -439,25 +504,53 @@ export default function SignupScreen() {
                 label="Email Address"
                 placeholder="Enter your email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setErrorMsg('');
+                }}
                 keyboardType="email-address"
                 delay={300}
               />
               
               <AnimatedInputField
                 label="Password"
-                placeholder="Create a secure password"
+                placeholder="Create a password"
                 secureTextEntry
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrorMsg('');
+                }}
                 delay={400}
               />
+              
+              <AnimatedInputField
+                label="Confirm Password"
+                placeholder="Confirm your password"
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={(text) => {
+                  setConfirmPassword(text);
+                  setErrorMsg('');
+                }}
+                delay={500}
+              />
+              
+              {errorMsg ? (
+                <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+              ) : null}
               
               <AnimatedButton 
                 text="Create Account" 
                 onPress={handleSignup}
-                delay={500}
+                delay={600}
               />
+              
+              {isSubmitting && (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color={Colors.common.teal} />
+                </View>
+              )}
               
               <View style={styles.divider}>
                 <View style={styles.dividerLine} />
@@ -536,8 +629,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   input: {
     height: 54,
@@ -594,16 +688,23 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   switchAuthText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6B7280',
-    fontWeight: '400',
   },
   switchAuthLink: {
-    color: Colors.common.teal,
-    fontWeight: '700',
-    fontSize: 15,
-    marginLeft: 4,
-    letterSpacing: -0.1,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 5,
+    color: Colors.light.primary,
+  },
+  errorText: {
+    color: '#ef4444',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    marginTop: 12,
+    alignItems: 'center',
   },
   shapeContainer: {
     justifyContent: 'center',

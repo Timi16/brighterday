@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
   ScrollView, 
   TouchableOpacity,
   Text,
-  Platform
+  Platform,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -18,6 +20,7 @@ import Animated, {
 
 import { Colors } from '../constants/Colors';
 import { useAppState } from '@/hooks/useAppState';
+import { useSupabaseAuth } from '../context/SupabaseAuthContext';
 
 // Age options from 1-14
 const ageOptions = Array.from({ length: 14 }, (_, i) => ({
@@ -42,10 +45,22 @@ const feelingOptions = [
 export default function PersonalizeScreen() {
   const insets = useSafeAreaInsets();
   const { updateState } = useAppState();
+  const { user, userProfile, updateProfile } = useSupabaseAuth();
   
   const [childAge, setChildAge] = useState<string | null>(null);
   const [firstTime, setFirstTime] = useState<string | null>(null);
   const [feeling, setFeeling] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Pre-fill form if user has already set preferences
+  useEffect(() => {
+    if (userProfile) {
+      if (userProfile.childAge) setChildAge(userProfile.childAge);
+      if (userProfile.firstTime) setFirstTime(userProfile.firstTime);
+      if (userProfile.feeling) setFeeling(userProfile.feeling);
+    }
+  }, [userProfile]);
 
   // Handle age selection
   const handleSelectAge = (age: string) => {
@@ -66,17 +81,45 @@ export default function PersonalizeScreen() {
   };
 
   // Handle continue button press
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (childAge && firstTime && feeling) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      // Store the personalization data in the app state
-      updateState({
-        childAge,
-        firstTime,
-        feeling
-      });
-      // Navigate to the meet sunny screen
-      router.push('/meet-sunny');
+      try {
+        setIsSubmitting(true);
+        setError(null);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        
+        // Store the personalization data in the app state
+        updateState({
+          childAge,
+          firstTime,
+          feeling
+        });
+        
+        // Store the personalization data in Supabase if user is logged in
+        if (user) {
+          const { error } = await updateProfile({
+            childAge,
+            firstTime,
+            feeling,
+            personalization_completed: true,
+            personalization_date: new Date().toISOString()
+          });
+          
+          if (error) {
+            console.error('Error updating profile:', error);
+            setError('Failed to save your preferences. Please try again.');
+            setIsSubmitting(false);
+            return;
+          }
+        }
+        
+        // Navigate to the meet sunny screen
+        router.push('/meet-sunny');
+      } catch (err) {
+        console.error('Personalization error:', err);
+        setError('An unexpected error occurred');
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -197,19 +240,22 @@ export default function PersonalizeScreen() {
 
         {/* Continue Button */}
         <Animated.View 
-          entering={FadeIn.delay(500).duration(400)}
+          entering={FadeInDown.delay(1000).duration(700)}
           style={styles.buttonContainer}
         >
-          <TouchableOpacity
-            style={[
-              styles.continueButton,
-              { opacity: isFormComplete ? 1 : 0.6 }
-            ]}
+          {error && (
+            <Text style={styles.errorText}>{error}</Text>
+          )}
+          <TouchableOpacity 
+            style={[styles.continueButton, (!isFormComplete || isSubmitting) && styles.continueButtonDisabled]}
             onPress={handleContinue}
-            disabled={!isFormComplete}
-            activeOpacity={0.8}
+            disabled={!isFormComplete || isSubmitting}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={styles.continueButtonText}>Continue</Text>
+            )}
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
@@ -362,5 +408,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#ef4444',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  continueButtonDisabled: {
+    opacity: 0.6,
   },
 });

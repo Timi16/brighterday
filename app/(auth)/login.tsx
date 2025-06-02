@@ -7,7 +7,9 @@ import {
   KeyboardAvoidingView, 
   Platform,
   ScrollView,
-  Dimensions
+  Dimensions,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -28,6 +30,7 @@ import { ThemedView } from '../../components/ThemedView';
 import { CleanHeader } from '../../components/CleanHeader';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from '../../hooks/useColorScheme';
+import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -217,12 +220,14 @@ const AnimatedButton = ({
   text, 
   onPress, 
   primary = true,
-  delay = 0 
+  delay = 0,
+  disabled = false 
 }: { 
   text: string, 
   onPress: () => void,
   primary?: boolean,
-  delay?: number 
+  delay?: number,
+  disabled?: boolean 
 }) => {
   const scale = useSharedValue(0.8);
   const opacity = useSharedValue(0);
@@ -250,12 +255,13 @@ const AnimatedButton = ({
   
   return (
     <Animated.View style={animatedStyle}>
-      <TouchableOpacity
+      <TouchableOpacity 
         style={[
           styles.button,
           primary 
             ? styles.primaryButton
-            : styles.secondaryButton
+            : styles.secondaryButton,
+          disabled && styles.buttonDisabled
         ]}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -263,6 +269,7 @@ const AnimatedButton = ({
         }}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        disabled={disabled}
         activeOpacity={1}
       >
         <ThemedText style={[
@@ -345,11 +352,14 @@ const SunnyIcon = ({ size = 80 }: { size?: number }) => {
 };
 
 export default function LoginScreen() {
-  const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const { login, authError, loading } = useSupabaseAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   
   const containerOpacity = useSharedValue(0);
   const containerTranslateY = useSharedValue(20);
@@ -359,21 +369,55 @@ export default function LoginScreen() {
     containerTranslateY.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.cubic) });
   }, []);
   
+  // Watch for authentication errors
+  useEffect(() => {
+    if (authError) {
+      setErrorMsg(authError);
+      setIsSubmitting(false);
+    }
+  }, [authError]);
+  
   const containerStyle = useAnimatedStyle(() => ({
     opacity: containerOpacity.value,
     transform: [{ translateY: containerTranslateY.value }]
   }));
   
-  const handleLogin = () => {
-    router.push({ pathname: '/(tabs)' });
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setErrorMsg('Please enter both email and password');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      setErrorMsg('');
+      
+      const { user, error } = await login(email, password);
+      
+      if (error) {
+        setErrorMsg(error.message || 'Login failed');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (user) {
+        // Login successful, navigate to the main app
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace('/(tabs)');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMsg('An unexpected error occurred');
+      setIsSubmitting(false);
+    }
   };
   
   const handleGoToSignup = () => {
-    router.push({ pathname: '/(auth)/signup' });
+    router.push('/(auth)/signup');
   };
   
   const handleGoToForgotPassword = () => {
-    router.push({ pathname: '/(auth)/forgot-password' });
+    router.push('/(auth)/forgot-password');
   };
   
   return (
@@ -433,7 +477,10 @@ export default function LoginScreen() {
                 label="Email Address"
                 placeholder="Enter your email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setErrorMsg('');
+                }}
                 keyboardType="email-address"
                 delay={200}
               />
@@ -443,9 +490,16 @@ export default function LoginScreen() {
                 placeholder="Enter your password"
                 secureTextEntry
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrorMsg('');
+                }}
                 delay={300}
               />
+              
+              {errorMsg ? (
+                <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+              ) : null}
               
               <TouchableOpacity
                 style={styles.forgotPassword}
@@ -457,10 +511,17 @@ export default function LoginScreen() {
               </TouchableOpacity>
               
               <AnimatedButton 
-                text="Sign In" 
+                text={isSubmitting ? 'Signing In...' : 'Sign In'}
                 onPress={handleLogin}
                 delay={400}
+                disabled={isSubmitting}
               />
+              
+              {isSubmitting && (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color={Colors.light.primary} />
+                </View>
+              )}
               
               <View style={styles.divider}>
                 <View style={styles.dividerLine} />
@@ -469,9 +530,11 @@ export default function LoginScreen() {
               
               <View style={styles.switchAuthContainer}>
                 <ThemedText style={styles.switchAuthText}>
+                  Don't have an account?
                 </ThemedText>
                 <TouchableOpacity onPress={handleGoToSignup}>
                   <ThemedText style={styles.switchAuthLink}>
+                    Sign Up
                   </ThemedText>
                 </TouchableOpacity>
               </View>
@@ -581,10 +644,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.3,
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   primaryButtonText: {
     color: '#FFFFFF',
   },
   secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: Colors.common.teal,
   },
   divider: {
@@ -610,16 +678,23 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   switchAuthText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#6B7280',
-    fontWeight: '400',
   },
   switchAuthLink: {
-    color: Colors.common.teal,
-    fontWeight: '700',
-    fontSize: 15,
-    marginLeft: 4,
-    letterSpacing: -0.1,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 5,
+    color: Colors.light.primary,
+  },
+  errorText: {
+    color: '#ef4444',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    marginTop: 12,
+    alignItems: 'center',
   },
   shapeContainer: {
     justifyContent: 'center',
