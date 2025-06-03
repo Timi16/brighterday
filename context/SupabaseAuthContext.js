@@ -36,18 +36,26 @@ export const SupabaseAuthProvider = ({ children }) => {
           // User is logged in, first load their profile
           await fetchUserProfile(session.user.id);
           
-          // Check if they've completed personalization
-          const storedProfile = await AsyncStorage.getItem('userProfile');
-          if (storedProfile) {
-            const profile = JSON.parse(storedProfile);
-            
-            if (profile.personalization_completed) {
-              console.log('User has already completed personalization, redirecting to meet-sunny');
-              // Add a small delay to ensure the app is ready for navigation
-              setTimeout(() => {
-                router.replace('/meet-sunny');
-              }, 500);
+          // Check if user is authenticated AND has completed personalization
+          if (session?.user?.id) {
+            const storedProfile = await AsyncStorage.getItem('userProfile');
+            if (storedProfile) {
+              const profile = JSON.parse(storedProfile);
+              
+              if (profile.personalization_completed) {
+                console.log('Authenticated user has completed personalization, redirecting to meet-sunny');
+                // Add a small delay to ensure the app is ready for navigation
+                setTimeout(() => {
+                  router.replace('/meet-sunny');
+                }, 500);
+              } else {
+                console.log('User not authenticated or has not completed personalization, skipping automatic redirect');
+              }
+            } else {
+              console.log('User not authenticated or has not completed personalization, skipping automatic redirect');
             }
+          } else {
+            console.log('User not authenticated, skipping automatic redirect');
           }
         }
       } catch (error) {
@@ -76,8 +84,8 @@ export const SupabaseAuthProvider = ({ children }) => {
 
     // Cleanup listener on unmount
     return () => {
-      if (authListener && typeof authListener.subscription?.unsubscribe === 'function') {
-        authListener.subscription.unsubscribe();
+      if (subscription && typeof subscription.unsubscribe === 'function') {
+        subscription.unsubscribe();
       }
     };
   }, []);
